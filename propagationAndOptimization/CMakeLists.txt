@@ -174,73 +174,106 @@ else()
   endif( )
 endif( )
 
+list(APPEND TUDAT_APPLICATION_EXTERNAL_LIBRARIES "")
+list(APPEND TUDAT_APPLICATION_EXTERNAL_INTERFACE_LIBRARIES "")
+list(APPEND TUDAT_APPLICATION_ITRS_LIBRARIES "")
+
+
+if(USE_SOFA)
+ list(APPEND TUDAT_APPLICATION_EXTERNAL_LIBRARIES sofa)
+ list(APPEND TUDAT_APPLICATION_EXTERNAL_INTERFACE_LIBRARIES tudat_sofa_interface )
+ list(APPEND TUDAT_APPLICATION_ITRS_LIBRARIES tudat_earth_orientation )
+endif()
+
 if(USE_CSPICE)
-  list(APPEND TUDAT_APPLICATION_EXTERNAL_LIBRARIES tudat_spice_interface cspice)
+  list(APPEND TUDAT_APPLICATION_EXTERNAL_LIBRARIES cspice)
+  list(APPEND TUDAT_APPLICATION_EXTERNAL_INTERFACE_LIBRARIES tudat_spice_interface )
 endif()
 
 if(USE_NRLMSISE00)
   list(APPEND TUDAT_APPLICATION_EXTERNAL_LIBRARIES nrlmsise00)
 endif()
 
-list(APPEND TUDAT_APPLICATION_PROPAGATION_LIBRARIES tudat_simulation_setup tudat_propagators
-    tudat_aerodynamics tudat_geometric_shapes tudat_relativity tudat_gravitation tudat_mission_segments
-    tudat_electro_magnetism tudat_propulsion tudat_ephemerides tudat_numerical_integrators tudat_reference_frames
-    tudat_basic_astrodynamics tudat_input_output tudat_basic_mathematics tudat_propagators tudat_basics ${TUDAT_APPLICATION_EXTERNAL_LIBRARIES})
 
-## Add single, Earth-orbiting satellite propagator application.
-add_executable(po_application_LunarOrbiterPropagationIntegrationSettings "${SRCROOT}/lunarOrbiterPropagatorIntegratorSettings.cpp")
+list(APPEND TUDAT_APPLICATION_PROPAGATION_LIBRARIES tudat_simulation_setup tudat_ground_stations tudat_propagators
+    tudat_aerodynamics tudat_system_models tudat_geometric_shapes tudat_relativity tudat_gravitation tudat_mission_segments
+    tudat_electro_magnetism tudat_propulsion tudat_ephemerides ${TUDAT_APPLICATION_ITRS_LIBRARIES} tudat_numerical_integrators tudat_reference_frames
+     tudat_statistics tudat_propagators ${TUDAT_APPLICATION_EXTERNAL_INTERFACE_LIBRARIES} tudat_basic_astrodynamics tudat_basic_mathematics
+     tudat_input_output tudat_basics ${TUDAT_APPLICATION_EXTERNAL_LIBRARIES})
+
+list(APPEND TUDAT_APPLICATION_ESTIMATION_LIBRARIES tudat_simulation_setup tudat_observation_models tudat_ground_stations tudat_acceleration_partials
+    tudat_observation_partials tudat_estimatable_parameters tudat_orbit_determination  tudat_propagators
+    tudat_aerodynamics tudat_system_models tudat_geometric_shapes tudat_relativity tudat_gravitation tudat_mission_segments
+    tudat_electro_magnetism tudat_propulsion tudat_ephemerides ${TUDAT_APPLICATION_ITRS_LIBRARIES} tudat_numerical_integrators tudat_reference_frames
+    tudat_statistics tudat_propagators ${TUDAT_APPLICATION_EXTERNAL_INTERFACE_LIBRARIES} tudat_basic_astrodynamics tudat_basic_mathematics
+    tudat_input_output tudat_basics ${TUDAT_APPLICATION_EXTERNAL_LIBRARIES})
+
+
+
+## INTEGRATION: SLIDE RESULTS
+add_executable(po_application_LunarOrbiterPropagationIntegrationSettings "${SRCROOT}/NumericalIntegration/Generation/lunarOrbiterPropagatorIntegratorSettings.cpp")
 setup_executable_target(po_application_LunarOrbiterPropagationIntegrationSettings "${SRCROOT}")
 target_link_libraries(po_application_LunarOrbiterPropagationIntegrationSettings ${TUDAT_APPLICATION_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES} )
 
-## Add single, Earth-orbiting satellite propagator application.
-add_executable(po_application_KeplerOrbitErrorTrend "${SRCROOT}/keplerOrbitTruncationAndRoundingErrorTrend.cpp")
+add_executable(po_application_KeplerOrbitErrorTrend "${SRCROOT}/NumericalIntegration/Generation/keplerOrbitTruncationAndRoundingErrorTrend.cpp")
 setup_executable_target(po_application_KeplerOrbitErrorTrend "${SRCROOT}")
 target_link_libraries(po_application_KeplerOrbitErrorTrend ${TUDAT_APPLICATION_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES} )
 
-## Add single, Earth-orbiting satellite propagator application.
-add_executable(po_application_EphemerisInfluence "${SRCROOT}/planetaryEphemerisInfluence.cpp")
+
+## EQUATIONS OF MOTION: SLIDE RESULTS
+add_executable(po_application_PerturbedSatellitePropagationElementTypes "${SRCROOT}/EquationsOfMotion/Generation/perturbedSatellitePropagationElementTypes.cpp")
+setup_executable_target(po_application_PerturbedSatellitePropagationElementTypes "${SRCROOT}")
+target_link_libraries(po_application_PerturbedSatellitePropagationElementTypes ${TUDAT_APPLICATION_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES} )
+
+add_executable(po_application_PerturbedSatellitePropagationElementTypesSingular "${SRCROOT}/EquationsOfMotion/Generation/perturbedSatellitePropagationElementTypesSingular.cpp")
+setup_executable_target(po_application_PerturbedSatellitePropagationElementTypesSingular "${SRCROOT}")
+target_link_libraries(po_application_PerturbedSatellitePropagationElementTypesSingular ${TUDAT_APPLICATION_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES} )
+
+
+## ENVIRONMENT MODELS: SLIDE RESULTS
+add_executable(po_application_EphemerisInfluence "${SRCROOT}/EnvironmentModels/Generation/planetaryEphemerisInfluence.cpp")
 setup_executable_target(po_application_EphemerisInfluence "${SRCROOT}")
 target_link_libraries(po_application_EphemerisInfluence ${TUDAT_APPLICATION_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES} )
 
-## Add single, Earth-orbiting satellite propagator application.
-add_executable(po_application_PropagationOrigin "${SRCROOT}/propagationOriginInfluence.cpp")
-setup_executable_target(po_application_PropagationOrigin "${SRCROOT}")
-target_link_libraries(po_application_PropagationOrigin ${TUDAT_APPLICATION_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES} )
-
-## Add single, Earth-orbiting satellite propagator application.
-add_executable(po_application_RotationModelInfluence "${SRCROOT}/rotationModelInfluence.cpp")
+add_executable(po_application_RotationModelInfluence "${SRCROOT}/EnvironmentModels/Generation/rotationModelInfluence.cpp")
 setup_executable_target(po_application_RotationModelInfluence "${SRCROOT}")
 target_link_libraries(po_application_RotationModelInfluence ${TUDAT_APPLICATION_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES} )
 
-## Add single, Earth-orbiting satellite propagator application.
-add_executable(po_application_SphericalHarmonicCase "${SRCROOT}/sphericalHarmonicInfluence.cpp")
+
+## ACCELERATION MODELS: SLIDE RESULTS
+add_executable(po_application_SphericalHarmonicCase "${SRCROOT}/AccelerationModels/Generation/sphericalHarmonicInfluence.cpp")
 setup_executable_target(po_application_SphericalHarmonicCase "${SRCROOT}")
 target_link_libraries(po_application_SphericalHarmonicCase ${TUDAT_APPLICATION_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES} )
 
-## Add single, Earth-orbiting satellite propagator application.
-add_executable(po_application_SphericalHarmonicCaseSolarSystem "${SRCROOT}/sphericalHarmonicInfluenceSolarSystem.cpp")
+add_executable(po_application_SphericalHarmonicCaseSolarSystem "${SRCROOT}/AccelerationModels/Generation/sphericalHarmonicInfluenceSolarSystem.cpp")
 setup_executable_target(po_application_SphericalHarmonicCaseSolarSystem "${SRCROOT}")
 target_link_libraries(po_application_SphericalHarmonicCaseSolarSystem ${TUDAT_APPLICATION_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES} )
 
-## Add single, Earth-orbiting satellite propagator application.
-add_executable(po_application_SphericalHarmonicCaseReEnrty "${SRCROOT}/apolloCapsuleEntrySphericalHarmonicInfluence.cpp")
-setup_executable_target(po_application_SphericalHarmonicCaseReEnrty "${SRCROOT}")
-target_link_libraries(po_application_SphericalHarmonicCaseReEnrty ${TUDAT_APPLICATION_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES} )
+add_executable(po_application_PropagationOrigin "${SRCROOT}/AccelerationModels/Generation/propagationOriginInfluence.cpp")
+setup_executable_target(po_application_PropagationOrigin "${SRCROOT}")
+target_link_libraries(po_application_PropagationOrigin ${TUDAT_APPLICATION_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES} )
 
-add_executable(po_application_StateSingularities "${SRCROOT}/stateRepresentationSingularities.cpp")
-setup_executable_target(po_application_StateSingularities "${SRCROOT}")
-target_link_libraries(po_application_StateSingularities ${TUDAT_APPLICATION_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES} )
+add_executable(po_application_MutualGravitationalInteraction "${SRCROOT}/AccelerationModels/Generation/mutualGravitationalInteraction.cpp")
+setup_executable_target(po_application_MutualGravitationalInteraction "${SRCROOT}")
+target_link_libraries(po_application_MutualGravitationalInteraction ${TUDAT_APPLICATION_ESTIMATION_LIBRARIES} ${Boost_LIBRARIES} )
 
-add_executable(po_application_PhobosRadiationPressure "${SRCROOT}/phobosOrbitPropagationWithRadiationPressure.cpp")
+add_executable(po_application_PhobosRadiationPressure "${SRCROOT}/AccelerationModels/Generation/phobosOrbitPropagationWithRadiationPressure.cpp")
 setup_executable_target(po_application_PhobosRadiationPressure "${SRCROOT}")
 target_link_libraries(po_application_PhobosRadiationPressure ${TUDAT_APPLICATION_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES} )
 
-#add_executable(po_application_InitialStateJ2Absorption "${SRCROOT}/initialStateAbsorptionOfJ2.cpp")
-#setup_executable_target(po_application_InitialStateJ2Absorption "${SRCROOT}")
-#target_link_libraries(po_application_InitialStateJ2Absorption ${TUDAT_APPLICATION_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES} )
+add_executable(po_application_SphericalHarmonicCaseReEnrty "${SRCROOT}/AccelerationModels/Generation/apolloCapsuleEntrySphericalHarmonicInfluence.cpp")
+setup_executable_target(po_application_SphericalHarmonicCaseReEnrty "${SRCROOT}")
+target_link_libraries(po_application_SphericalHarmonicCaseReEnrty ${TUDAT_APPLICATION_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES} )
 
 
+## UNCERTAINTY MODELLING: SLIDE RESULTS
+add_executable(po_application_InitialStateAbsorptionEntry "${SRCROOT}/UncertaintyModelling/Generation/initialStateAbsorptionOfJ2_Entry.cpp")
+setup_executable_target(po_application_InitialStateAbsorptionEntry "${SRCROOT}")
+target_link_libraries(po_application_InitialStateAbsorptionEntry ${TUDAT_APPLICATION_ESTIMATION_LIBRARIES} ${Boost_LIBRARIES} )
 
+add_executable(po_application_InitialStateAbsorptionSolarSystem "${SRCROOT}/UncertaintyModelling/Generation/initialStateAbsorptionOfJ2_SolarSystem.cpp")
+setup_executable_target(po_application_InitialStateAbsorptionSolarSystem "${SRCROOT}")
+target_link_libraries(po_application_InitialStateAbsorptionSolarSystem ${TUDAT_APPLICATION_ESTIMATION_LIBRARIES} ${Boost_LIBRARIES} )
 
 
 
