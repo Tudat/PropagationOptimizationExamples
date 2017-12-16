@@ -1,7 +1,12 @@
-clc
+set(0, 'defaultLegendInterpreter','latex');
+set(0, 'defaultAxesTickLabelInterpreter','latex');
+set(0, 'defaultTextInterpreter','latex');
+set(0,'defaultAxesFontSize',20)
+set(0,'defaultTextFontSize',20)
+
 close all
 clear all
-
+clc
 
 for k=1:3
     dataFolder = '../../SimulationOutput/EquationsOfMotion/';
@@ -34,10 +39,14 @@ for k=1:3
         elseif( i == 6)
             ylabel('$\theta$ [deg]','interpreter','latex')
         end
-        
-        
-        
-        
+    end
+    
+    if( k == 1 )
+        suptitle('Earth orbit - circular')
+    elseif( k == 2 )
+        suptitle('Earth orbit - equatorial')
+    elseif( k == 3 )
+        suptitle('Earth orbit - circular and equatorial')
     end
     
     set( figure(k), 'Units', 'normalized', 'Position', [0,0,1,0.66]);
@@ -84,6 +93,17 @@ for k=1:4
             ylabel('$L$ [deg]','interpreter','latex')
         end
         
+    end
+    
+    if( k == 1 )
+        suptitle('Earth orbit - circular')
+    elseif( k == 2 )
+        suptitle('Earth orbit - equatorial')
+    elseif( k == 3 )
+        suptitle('Earth orbit - circular and equatorial')
+    elseif( k == 4 )
+        suptitle('Earth orbit - retrograde equatorial')
+
     end
     
     

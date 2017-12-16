@@ -257,6 +257,10 @@ add_executable(po_application_MutualGravitationalInteraction "${SRCROOT}/Acceler
 setup_executable_target(po_application_MutualGravitationalInteraction "${SRCROOT}")
 target_link_libraries(po_application_MutualGravitationalInteraction ${TUDAT_APPLICATION_ESTIMATION_LIBRARIES} ${Boost_LIBRARIES} )
 
+add_executable(po_application_MutualExtendedGravitationalInteraction "${SRCROOT}/AccelerationModels/Generation/mutualExtendedGravitationalInteraction.cpp")
+setup_executable_target(po_application_MutualExtendedGravitationalInteraction "${SRCROOT}")
+target_link_libraries(po_application_MutualExtendedGravitationalInteraction ${TUDAT_APPLICATION_ESTIMATION_LIBRARIES} ${Boost_LIBRARIES} )
+
 add_executable(po_application_PhobosRadiationPressure "${SRCROOT}/AccelerationModels/Generation/phobosOrbitPropagationWithRadiationPressure.cpp")
 setup_executable_target(po_application_PhobosRadiationPressure "${SRCROOT}")
 target_link_libraries(po_application_PhobosRadiationPressure ${TUDAT_APPLICATION_PROPAGATION_LIBRARIES} ${Boost_LIBRARIES} )
@@ -274,6 +278,10 @@ target_link_libraries(po_application_InitialStateAbsorptionEntry ${TUDAT_APPLICA
 add_executable(po_application_InitialStateAbsorptionSolarSystem "${SRCROOT}/UncertaintyModelling/Generation/initialStateAbsorptionOfJ2_SolarSystem.cpp")
 setup_executable_target(po_application_InitialStateAbsorptionSolarSystem "${SRCROOT}")
 target_link_libraries(po_application_InitialStateAbsorptionSolarSystem ${TUDAT_APPLICATION_ESTIMATION_LIBRARIES} ${Boost_LIBRARIES} )
+
+add_executable(po_application_AccelerationDirectionInfluence "${SRCROOT}/UncertaintyModelling/Generation/accelerationDirectionInfluence.cpp")
+setup_executable_target(po_application_AccelerationDirectionInfluence "${SRCROOT}")
+target_link_libraries(po_application_AccelerationDirectionInfluence ${TUDAT_APPLICATION_ESTIMATION_LIBRARIES} ${Boost_LIBRARIES} )
 
 
 

@@ -1,14 +1,19 @@
-clc
-clear all
+set(0, 'defaultLegendInterpreter','latex');
+set(0, 'defaultAxesTickLabelInterpreter','latex');
+set(0, 'defaultTextInterpreter','latex');
+
 close all
+clear all
+clc
 
 folder = '../../SimulationOutput/IntergratorAndPropagatorInfluence/';
+saveResults = true;
 
 for i=0:2
     for j=0:3
         for k=0:3
             for l=0:1
-                for m=1                    
+                for m=1
                     disp(strcat(num2str(i),'_',num2str(j),'_',num2str(k),'_',num2str(l)))
                     perturbedStateMap{i+1,j+1,k+1,l+1,2}=load(strcat(folder,'numericalKeplerOrbit_eccSett_',num2str(i),'_intType',num2str(k),'_intSett',num2str(j),'_propSett',num2str(l),'_accSett',num2str(m),'.dat'));
                     s=size(perturbedStateMap{i+1,j+1,k+1,l+1,2});
@@ -18,7 +23,7 @@ for i=0:2
                     meanTimeStep(i+1,j+1,k+1,l+1,m+1)=mean(timeSteps{i+1,j+1,k+1,l+1,2});
                     standardDeviationTimeStep(i+1,j+1,k+1,l+1,m+1)=std(timeSteps{i+1,j+1,k+1,l+1,2});
                     numberOfTimeStepsPerturbed(i+1,j+1,k+1,l+1,m+1) = max(size(perturbedStateMap{i+1,j+1,k+1,l+1,2}));
-
+                    
                 end
             end
         end
@@ -29,7 +34,7 @@ for i=0:2
     for j=0:3
         for k=0:3
             for l=0
-                for m=0                    
+                for m=0
                     disp(strcat(num2str(i),'_',num2str(j),'_',num2str(k),'_',num2str(l)))
                     perturbedStateMap{i+1,j+1,k+1,l+1,1}=load(strcat(folder,'numericalKeplerOrbit_eccSett_',num2str(i),'_intType',num2str(k),'_intSett',num2str(j),'_propSett',num2str(l),'_accSett',num2str(m),'.dat'));
                     s=size(perturbedStateMap{i+1,j+1,k+1,l+1,1});
@@ -65,7 +70,7 @@ for l=1:2
         currentStateTimes = perturbedStateMap{i,j,k,l,m}(:,1);
         currentStates = perturbedStateMap{i,j,k,l,m}(:,2:4);
         interpolatedStates = interp1(currentStateTimes,currentStates,timeEvaluations);
-
+        
         scatter(timeEvaluations,sum(sqrt((interpolatedStates-interpolatedRefernceStates)'.^2)),'*');
         hold on
         grid on
@@ -73,17 +78,20 @@ for l=1:2
         
     end
     if( l == 1 )
-       title('Cowell') 
+        title('Cowell')
     else
         title('Encke')
     end
     legend('Tol=10^{-13}','Tol=10^{-12}','Tol=10^{-11}');
     xlabel('Time [s]')
     ylabel('Position difference w.r.t. tol=10^{-14}')
-        
+    
 end
 
- set(gcf, 'Units', 'normalized', 'Position', [0,0,0.75 0.75]);
-    set(gcf,'PaperUnits','centimeters','PaperPosition',[0 0 45 30]);
-    set(gcf,'PaperPositionMode','auto');
-saveas(figure(100),strcat('CowellEnckeComparePerturbed'),'png');
+set(gcf, 'Units', 'normalized', 'Position', [0,0,0.75 0.75]);
+set(gcf,'PaperUnits','centimeters','PaperPosition',[0 0 45 30]);
+set(gcf,'PaperPositionMode','auto');
+
+if( saveResults )
+    saveas(figure(100),strcat('CowellEnckeComparePerturbed'),'png');
+end

@@ -1,8 +1,12 @@
-set(0,'defaultAxesFontSize',26)
-set(0,'defaultTextFontSize',26)
-clc
+set(0, 'defaultLegendInterpreter','latex');
+set(0, 'defaultAxesTickLabelInterpreter','latex');
+set(0, 'defaultTextInterpreter','latex');
+set(0,'defaultAxesFontSize',20)
+set(0,'defaultTextFontSize',20)
+
 close all
 clear all
+clc
 
 dataFolder = '../../SimulationOutput/EquationsOfMotion/';
 
@@ -43,6 +47,7 @@ xlabel('t [hr]')
 ylabel('Velocity [m/s]')
 xlim([0 24])
 
+suptitle('Earth orbiter - Cowell Propagator')
 
 set( figure(1), 'Units', 'normalized', 'Position', [0,0,1,0.75]);
 set( figure(1),'PaperUnits','centimeters','PaperPosition',[0 0 60 30]);
@@ -60,7 +65,7 @@ plot(derivativeTime,perturbedSatelliteDerivative(:,6),'LineWidth',2)
 plot(derivativeTime,perturbedSatelliteDerivative(:,7),'LineWidth',2)
 grid on
 xlabel('t [hr]')
-ylabel('Total Acceleration [m/s^2]')
+ylabel('Total Acceleration [m/s$^2$]')
 legend('x','y','z')
 xlim([0 24])
 
@@ -79,7 +84,7 @@ plot(derivativeTime,perturbedSatelliteDerivative(:,6)-unperturbedSatelliteDeriva
 plot(derivativeTime,perturbedSatelliteDerivative(:,7)-unperturbedSatelliteDerivative(:,7),'LineWidth',2)
 grid on
 xlabel('t [hr]')
-ylabel('Effective Acceleration [m/s^2]')
+ylabel('Perturbing Acceleration [m/s$^2$]')
 legend('x','y','z')
 xlim([0 24])
 
@@ -114,6 +119,8 @@ xlabel('t [hr]')
 ylabel('Velocity [m/s]')
 xlim([0 24])
 
+suptitle('Earth orbiter - Encke Propagator')
+
 set( figure(2), 'Units', 'normalized', 'Position', [0,0,1,0.75]);
 set( figure(2),'PaperUnits','centimeters','PaperPosition',[0 0 60 30]);
 
@@ -142,13 +149,15 @@ for i=1:6
     elseif( i == 3)
         ylabel('i [deg]')
     elseif( i == 4)
-        ylabel('\omega [def]')
+        ylabel('$\omega$ [deg]')
     elseif( i == 5)
-        ylabel('\Omega [deg]')
+        ylabel('$\Omega$ [deg]')
     elseif( i == 6)
-        ylabel('\theta [deg]')
+        ylabel('$\thet$a [deg]')
     end
 end
+
+suptitle('Earth orbiter - Kepler Propagator')
 
 set( figure(3), 'Units', 'normalized', 'Position', [0,0,1,0.75]);
 set( figure(3),'PaperUnits','centimeters','PaperPosition',[0 0 60 30]);
@@ -187,6 +196,8 @@ for i=1:6
     end
 end
 
+suptitle('Earth orbiter - Kepler Element Derivatives')
+
 set( figure(5), 'Units', 'normalized', 'Position', [0,0,1,0.75]);
 set( figure(5),'PaperUnits','centimeters','PaperPosition',[0 0 60 30]);
 
@@ -199,11 +210,11 @@ perturbedSatelliteKepler = load(strcat(dataFolder,'singlePerturbedSatellitePropa
 
 figure(4)
 for i=1:6
-%     if( i > 2 )
-%         multiplier = 180/pi;
-%     else
-%         multiplier = 1;
-%     end
+        if( i == 6 )
+            multiplier = 180/pi;
+        else
+            multiplier = 1;
+        end
     multiplier = 1;
     subplot(2,3,i)
     plot(time,multiplier*perturbedSatelliteKepler(:,i+1),'LineWidth',2)
@@ -211,19 +222,21 @@ for i=1:6
     xlabel('t [hr]')
     grid on
     if( i == 1)
-        ylabel('a [m]')
+        ylabel('p [m]')
     elseif( i == 2)
-        ylabel('e [-]')
+        ylabel('f [-]')
     elseif( i == 3)
-        ylabel('i [deg]')
+        ylabel('g [-]')
     elseif( i == 4)
-        ylabel('\omega [def]')
+        ylabel('h [-]')
     elseif( i == 5)
-        ylabel('\Omega [deg]')
+        ylabel('k [-]')
     elseif( i == 6)
-        ylabel('\theta [deg]')
+        ylabel('L [deg]')
     end
 end
+
+suptitle('Earth orbiter - MEE Propagator')
 
 set( figure(4), 'Units', 'normalized', 'Position', [0,0,1,0.75]);
 set( figure(4),'PaperUnits','centimeters','PaperPosition',[0 0 60 30]);
@@ -243,6 +256,8 @@ grid on
 ylabel('$\mathcal{F}(q)$ [-]','interpreter','latex')
 xlabel('$r/ \rho [-]$','interpreter','latex')
 xlim([0.75 1.25])
+
+title('q-function for Encke propagator')
 
 set( gcf, 'Units', 'normalized', 'Position', [0,0,0.5,0.75]);
 set( gcf,'PaperUnits','centimeters','PaperPosition',[0 0 30 30]);

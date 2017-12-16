@@ -55,6 +55,7 @@ install_manifest.txt
 # Build and doxygen related
 #
 Documentation/
+*/SimulationOutput/
 doc/doxygen/html/
 doc/doxygen/latex/
 build*/

@@ -1,14 +1,18 @@
-clc
+set(0, 'defaultLegendInterpreter','latex');
+set(0, 'defaultAxesTickLabelInterpreter','latex');
+set(0, 'defaultTextInterpreter','latex');
+
 close all
 clear all
+clc
 
-  set(0,'DefaultAxesFontSize',14)
+folder = '../../SimulationOutput/IntergratorAndPropagatorInfluence/';
+saveResults = true;
 
 
 errorMap = cell(12,4,4);
 errorMap = cell(12,4,1);
 
-folder = '../../SimulationOutput/IntergratorAndPropagatorInfluence/';
 for i=0:7
     for j=0:3
         for k=0:7
@@ -16,7 +20,7 @@ for i=0:7
             errorMap{i+1,j+1,k+1}=load(strcat(folder,'numericalKeplerOrbitError_e_',num2str(i),'_intType',num2str(k),'_intSett',num2str(j),'.dat'));
             if( k == 0 )
                 errorBackwardsMap{i+1,j+1,k+1}=load(strcat(folder,'numericalKeplerOrbitErrorBack_e_',num2str(i),'_intType',num2str(k),'_intSett',num2str(j),'.dat'));
-
+                
             end
         end
     end
@@ -89,8 +93,10 @@ for type = 0:1
         set(gcf, 'Units', 'normalized', 'Position', [0,0,0.75 0.75]);
         set(gcf,'PaperUnits','centimeters','PaperPosition',[0 0 45 30]);
         set(gcf,'PaperPositionMode','auto');
-        pause(1.0)
-        saveas(figure(i),strcat('KeplerOrbitError',num2str(i),'_',num2str(type)),'png');
+        if( saveResults )
+            pause(1.0)
+            saveas(figure(i),strcat('KeplerOrbitError',num2str(i),'_',num2str(type)),'png');
+        end
         
     end
     
@@ -107,7 +113,7 @@ for i=1:8
         grid on
         
         title(strcat('e=',num2str(eccentricities(i))));
-
+        
         
         xlabel('t [s]');
         ylabel('Position error [m]');
@@ -115,7 +121,7 @@ for i=1:8
         xlim([0 5*86400])
         
         if(i==8)
-           legend('Forward','Backwards','Location','SouthEast') 
+            legend('Forward','Backwards','Location','SouthEast')
         end
     end
     
@@ -129,8 +135,12 @@ for j=1:4
     set(gcf, 'Units', 'normalized', 'Position', [0,0,0.75 0.75]);
     set(gcf,'PaperUnits','centimeters','PaperPosition',[0 0 45 30]);
     set(gcf,'PaperPositionMode','auto');
-    saveas(figure(12+j),strcat('ForwardBackwardPropagation',num2str(j)),'png');
-
+    
+    if( saveResults )
+        pause(1.0)
+        saveas(figure(12+j),strcat('ForwardBackwardPropagation',num2str(j)),'png');
+    end
+    
 end
 
 %%
@@ -171,7 +181,10 @@ for i=1:8
     set(gcf, 'Units', 'normalized', 'Position', [0,0,0.75 0.75]);
     set(gcf,'PaperUnits','centimeters','PaperPosition',[0 0 45 30]);
     set(gcf,'PaperPositionMode','auto');
-    saveas(figure(i+16),strcat('KeplerOrbitStepSizeControl_RKF',num2str(i)),'png');
+    if( saveResults )
+        pause(1.
+        saveas(figure(i+16),strcat('KeplerOrbitStepSizeControl_RKF',num2str(i)),'png');
+    end
 end
 
 %%
@@ -194,10 +207,10 @@ for i=1:8
                 
                 xlim([0 1.3E4])
                 ylim([1.0E-3 1.0E4])
-
+                
                 xlabel('t [s]');
                 ylabel('Step size [s]');
-
+                
                 
                 if( k== 1)
                     legend('tol=10E-14','tol=10E-13','tol=10E-12','tol=10E-11','Location','SouthEast')
@@ -210,5 +223,8 @@ for i=1:8
     set(gcf, 'Units', 'normalized', 'Position', [0,0,0.75 0.75]);
     set(gcf,'PaperUnits','centimeters','PaperPosition',[0 0 45 30]);
     set(gcf,'PaperPositionMode','auto');
-    saveas(figure(i+16),strcat('KeplerOrbitStepSizeControl_BS',num2str(i)),'png');
+    if( saveResults )
+        pause(1.0)
+        saveas(figure(i+16),strcat('KeplerOrbitStepSizeControl_BS',num2str(i)),'png');
+    end
 end
