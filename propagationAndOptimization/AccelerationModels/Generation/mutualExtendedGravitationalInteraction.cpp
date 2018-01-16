@@ -40,7 +40,7 @@ int main()
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     double simulationStartEpoch = 0.0;
-    double simulationEndEpoch = 1.0 * physical_constants::JULIAN_YEAR;
+    double simulationEndEpoch = physical_constants::JULIAN_YEAR / 12.0;
 
     // Load Spice kernels.
     spice_interface::loadStandardSpiceKernels( );
@@ -73,7 +73,7 @@ int main()
     // Finalize body creation.
     setGlobalFrameBodyEphemerides( bodyMap, "Earth", "ECLIPJ2000" );
 
-    for( unsigned int accelerationCase = 0; accelerationCase < 2; accelerationCase++ )
+    for( unsigned int accelerationCase = 0; accelerationCase < 1; accelerationCase++ )
     {
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////            CREATE ACCELERATIONS          //////////////////////////////////////////////////////
@@ -116,10 +116,16 @@ int main()
         Eigen::VectorXd systemInitialState = spice_interface::getBodyCartesianStateAtEpoch(
                     "Moon", "Earth", "ECLIPJ2000", "None", simulationStartEpoch );
 
+        std::vector< boost::shared_ptr< SingleDependentVariableSaveSettings > > dependentVariables;
+        dependentVariables.push_back(
+                    boost::make_shared< MutualExtendedSphericalHarmonicAccelerationTermsDependentVariableSaveSettings >(
+                        "Moon", "Earth", 2, 2, 2, 2 ) );
+
+
         boost::shared_ptr< PropagatorSettings< double > > propagatorSettings =
                 boost::make_shared< TranslationalStatePropagatorSettings< double > >
                 ( centralBodies, accelerationModelMap, bodiesToPropagate, systemInitialState, simulationEndEpoch,
-                  cowell );
+                  cowell, boost::make_shared< DependentVariableSaveSettings >( dependentVariables ) );
 
         boost::shared_ptr< IntegratorSettings< > > integratorSettings =
                         boost::make_shared< RungeKuttaVariableStepSizeSettings< > >
@@ -138,6 +144,12 @@ int main()
         // Write satellite propagation history to file.
         input_output::writeDataMapToTextFile( integrationResult,
                                               "moonMutualExtendedGravitationalAttractionInfluence_varstep_3_" +
+                                              boost::lexical_cast< std::string >( accelerationCase ) +
+                                              ".dat",
+                                              outputDirectory);
+
+        input_output::writeDataMapToTextFile( dynamicsSimulator.getDependentVariableHistory( ),
+                                              "moonMutualExtendedGravitationalAccelerationTerms_varstep_3_" +
                                               boost::lexical_cast< std::string >( accelerationCase ) +
                                               ".dat",
                                               outputDirectory);

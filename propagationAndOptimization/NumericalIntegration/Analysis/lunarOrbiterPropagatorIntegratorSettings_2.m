@@ -6,7 +6,7 @@ close all
 clear all
 clc
 
-folder = '../../SimulationOutput/IntergratorAndPropagatorInfluence/';
+folder = '../../SimulationOutput/NumericalIntegration/';
 saveResults = true;
 
 for i=0:2
@@ -55,7 +55,7 @@ close all
 
 timeEvaluations = 0:10:3.0*3600;
 
-i = 3;
+i = 2;
 k = 2;
 m = 2;
 

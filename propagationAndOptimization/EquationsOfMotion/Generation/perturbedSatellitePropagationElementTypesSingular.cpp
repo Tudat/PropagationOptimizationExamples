@@ -189,7 +189,9 @@ void propagateNearSingularOrbit(
     std::map< double, Eigen::VectorXd > integrationResult = dynamicsSimulator.getEquationsOfMotionNumericalSolution( );
     std::map< double, Eigen::VectorXd > keplerianResults;
     std::map< double, Eigen::VectorXd > meeResults;
+    std::map< double, Eigen::VectorXd > meeResultsFromKepler;
     std::map< double, Eigen::VectorXd > keplerOrbitResults;
+    std::map< double, Eigen::VectorXd > usmResults;
 
 
     for( std::map< double, Eigen::VectorXd >::const_iterator resultIterator = integrationResult.begin( ); resultIterator !=
@@ -199,9 +201,14 @@ void propagateNearSingularOrbit(
                     Eigen::Vector6d( resultIterator->second ), earthGravitationalParameter );
         meeResults[ resultIterator->first ]  = convertCartesianToModifiedEquinoctialElements(
                     Eigen::Vector6d( resultIterator->second ), earthGravitationalParameter, false );
-        keplerOrbitResults[ resultIterator->first ]  = convertCartesianToKeplerianElements( propagateKeplerOrbit(
-                                                                                                asterixInitialStateInKeplerianElements, resultIterator->first, earthGravitationalParameter ),
-                                                                                            earthGravitationalParameter );
+        keplerOrbitResults[ resultIterator->first ]  = convertCartesianToKeplerianElements(
+                    propagateKeplerOrbit(
+                        asterixInitialStateInKeplerianElements, resultIterator->first, earthGravitationalParameter ),
+                    earthGravitationalParameter );
+        usmResults[ resultIterator->first ] = convertKeplerianToUnifiedStateModelElements(
+                    keplerOrbitResults[ resultIterator->first ], earthGravitationalParameter );
+        meeResultsFromKepler[ resultIterator->first ] = convertKeplerianToModifiedEquinoctialElements(
+                    Eigen::Vector6d( keplerOrbitResults[ resultIterator->first ] ) );
     }
 
     // Write perturbed satellite propagation history to file.
@@ -225,7 +232,23 @@ void propagateNearSingularOrbit(
     // Write perturbed satellite propagation history to file.
     input_output::writeDataMapToTextFile( meeResults,
                                           "singlePerturbedSatellitePropagationMeeHistorySingular" + boost::lexical_cast< std::string >( testCase ) + ".dat",
-                                         outputDirectory,
+                                          outputDirectory,
+                                          "",
+                                          std::numeric_limits< double >::digits10,
+                                          std::numeric_limits< double >::digits10,
+                                          "," );
+
+    input_output::writeDataMapToTextFile( usmResults,
+                                          "singlePerturbedSatellitePropagationUsmHistorySingular" + boost::lexical_cast< std::string >( testCase ) + ".dat",
+                                          outputDirectory,
+                                          "",
+                                          std::numeric_limits< double >::digits10,
+                                          std::numeric_limits< double >::digits10,
+                                          "," );
+
+    input_output::writeDataMapToTextFile( meeResultsFromKepler,
+                                          "singlePerturbedSatellitePropagationMeeFromKeplerHistorySingular" + boost::lexical_cast< std::string >( testCase ) + ".dat",
+                                          outputDirectory,
                                           "",
                                           std::numeric_limits< double >::digits10,
                                           std::numeric_limits< double >::digits10,

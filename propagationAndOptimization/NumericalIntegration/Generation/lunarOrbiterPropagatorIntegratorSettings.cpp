@@ -14,10 +14,20 @@
 
 
 //! Execute propagation of orbit of Asterix around the Earth.
-int main()
+template< typename StateScalarType = double >
+void runSimulations( )
 {
     std::string outputDirectory = tudat_applications::getOutputPath( "NumericalIntegration/" );
 
+    bool useLongDoubles = false;
+    double toleranceFactor = 1.0;
+    std::string fileSuffix = "";
+    if( !( sizeof( StateScalarType ) == 8 ) )
+    {
+        useLongDoubles = true;
+        fileSuffix = "_long";
+        toleranceFactor = 0.01;
+    }
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////            USING STATEMENTS              //////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,7 +92,7 @@ int main()
     // Finalize body creation.
     setGlobalFrameBodyEphemerides( bodyMap, "Earth", "ECLIPJ2000" );
 
-    for( unsigned int accelerationCase = 0; accelerationCase < 2; accelerationCase++ )
+    for( unsigned int accelerationCase = 0; accelerationCase < 1; accelerationCase++ )
     {
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////            CREATE ACCELERATIONS          //////////////////////////////////////////////////////
@@ -143,8 +153,9 @@ int main()
         {
             for( unsigned int j = 0; j < 4; j++ )
             {
-                for( unsigned int k = 0; k < 8; k++ )
-                {
+                std::map< double, double > functionEvaluationCounter;
+                for( unsigned int k = 0; k < 14; k++ )
+                {                                       
                     int lmax = 1;
                     if( accelerationCase != 0 )
                     {
@@ -171,9 +182,9 @@ int main()
 
                         // Convert Asterix state from Keplerian elements to Cartesian elements.
                         double earthGravitationalParameter = bodyMap.at( "Earth" )->getGravityFieldModel( )->getGravitationalParameter( );
-                        Eigen::VectorXd systemInitialState = convertKeplerianToCartesianElements(
+                        Eigen::Matrix< StateScalarType, Eigen::Dynamic, 1 > systemInitialState = convertKeplerianToCartesianElements(
                                     asterixInitialStateInKeplerianElements,
-                                    earthGravitationalParameter );
+                                    earthGravitationalParameter ).template cast< StateScalarType >( );
 
 
                         // Set simulation end epoch.
@@ -186,88 +197,142 @@ int main()
                         {
                             propagatorType = encke;
                         }
-                        boost::shared_ptr< TranslationalStatePropagatorSettings< double > > propagatorSettings =
-                                boost::make_shared< TranslationalStatePropagatorSettings< double > >
-                                ( centralBodies, accelerationModelMap, bodiesToPropagate, systemInitialState, simulationEndEpoch, propagatorType );
+                        boost::shared_ptr< TranslationalStatePropagatorSettings< StateScalarType > > propagatorSettings =
+                                boost::make_shared< TranslationalStatePropagatorSettings< StateScalarType > >
+                                ( centralBodies, accelerationModelMap, bodiesToPropagate, systemInitialState,
+                                  boost::make_shared< PropagationTimeTerminationSettings >( simulationEndEpoch, false ), propagatorType );
 
                         boost::shared_ptr< IntegratorSettings< > > integratorSettings;
                         if( k == 0 )
                         {
+                            double timeStep = std::pow( 2.0,  static_cast< double >( 1.0 + j ) );
                             integratorSettings = boost::make_shared< IntegratorSettings< > >
-                                    ( rungeKutta4, simulationStartEpoch, std::pow( 10.0,  static_cast< double >( 1.0 + j ) ) );
+                                    ( rungeKutta4, simulationStartEpoch, timeStep );
                         }
                         else if( k == 1 )
                         {
-                            double tolerance = std::pow( 10.0, static_cast< double >( -14.0 + j ) );
+                            double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
                             integratorSettings = boost::make_shared< RungeKuttaVariableStepSizeSettings< > >(
                                         rungeKuttaVariableStepSize, simulationStartEpoch, 10.0,
                                         numerical_integrators::RungeKuttaCoefficients::rungeKuttaFehlberg45,
                                         std::numeric_limits< double >::epsilon( ), std::numeric_limits< double >::infinity( ),
-                                        tolerance, tolerance );
+                                        toleranceFactor * tolerance, toleranceFactor * 1.0E-10 );
                         }
                         else if( k == 2 )
                         {
-                            double tolerance = std::pow( 10.0, static_cast< double >( -14.0 + j ) );
+                            double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
                             integratorSettings = boost::make_shared< RungeKuttaVariableStepSizeSettings< > >(
                                         rungeKuttaVariableStepSize, simulationStartEpoch, 10.0,
                                         numerical_integrators::RungeKuttaCoefficients::rungeKuttaFehlberg56,
                                         std::numeric_limits< double >::epsilon( ), std::numeric_limits< double >::infinity( ),
-                                        tolerance, tolerance );
+                                        toleranceFactor * tolerance, toleranceFactor * 1.0E-10 );
                         }
                         else if( k == 3 )
                         {
-                            double tolerance = std::pow( 10.0, static_cast< double >( -14.0 + j ) );
+                            double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
                             integratorSettings = boost::make_shared< RungeKuttaVariableStepSizeSettings< > >(
                                         rungeKuttaVariableStepSize, simulationStartEpoch, 10.0,
                                         numerical_integrators::RungeKuttaCoefficients::rungeKuttaFehlberg78,
                                         std::numeric_limits< double >::epsilon( ), std::numeric_limits< double >::infinity( ),
-                                        tolerance, tolerance );
+                                        toleranceFactor * tolerance, toleranceFactor * 1.0E-10 );
                         }
                         else if( k == 4 )
                         {
-                            double tolerance = std::pow( 10.0, static_cast< double >( -14.0 + j ) );
+                            double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
                             integratorSettings = boost::make_shared< tudat::numerical_integrators::BulirschStoerIntegratorSettings< > >(
                                         simulationStartEpoch, 10.0,
                                         numerical_integrators::bulirsch_stoer_sequence, 4,
                                         std::numeric_limits< double >::epsilon( ), std::numeric_limits< double >::infinity( ),
-                                        tolerance, tolerance );
+                                        toleranceFactor * tolerance, toleranceFactor * 1.0E-10 );
                         }
                         else if( k == 5 )
                         {
-                            double tolerance = std::pow( 10.0, static_cast< double >( -14.0 + j ) );
+                            double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
                             integratorSettings = boost::make_shared< tudat::numerical_integrators::BulirschStoerIntegratorSettings< > >(
                                         simulationStartEpoch, 10.0,
                                         numerical_integrators::bulirsch_stoer_sequence, 6,
                                         std::numeric_limits< double >::epsilon( ), std::numeric_limits< double >::infinity( ),
-                                        tolerance, tolerance );
+                                        toleranceFactor * tolerance, toleranceFactor * 1.0E-10 );
                         }
                         else if( k == 6 )
                         {
-                            double tolerance = std::pow( 10.0, static_cast< double >( -14.0 + j ) );
+                            double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
                             integratorSettings = boost::make_shared< tudat::numerical_integrators::BulirschStoerIntegratorSettings< > >(
                                         simulationStartEpoch, 10.0,
                                         numerical_integrators::bulirsch_stoer_sequence, 8,
                                         std::numeric_limits< double >::epsilon( ), std::numeric_limits< double >::infinity( ),
-                                        tolerance, tolerance );
+                                        toleranceFactor * tolerance, toleranceFactor * 1.0E-10 );
                         }
                         else if( k == 7 )
                         {
-                            double tolerance = std::pow( 10.0, static_cast< double >( -14.0 + j ) );
+                            double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
                             integratorSettings = boost::make_shared< tudat::numerical_integrators::BulirschStoerIntegratorSettings< > >(
                                         simulationStartEpoch, 10.0,
                                         numerical_integrators::bulirsch_stoer_sequence, 10,
                                         std::numeric_limits< double >::epsilon( ), std::numeric_limits< double >::infinity( ),
-                                        tolerance, tolerance );
+                                        toleranceFactor * tolerance, toleranceFactor * 1.0E-10 );
                         }
+                        else if( k == 8 )
+                        {
+                            double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
+                            integratorSettings = boost::make_shared< RungeKuttaVariableStepSizeSettings< > >(
+                                        rungeKuttaVariableStepSize, simulationStartEpoch, 10.0,
+                                        numerical_integrators::RungeKuttaCoefficients::rungeKutta87DormandPrince,
+                                        std::numeric_limits< double >::epsilon( ), std::numeric_limits< double >::infinity( ),
+                                        100.0 * toleranceFactor * tolerance, toleranceFactor * 1.0E-10 );
+                        }
+                        else if( k == 9 )
+                        {
+                            double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
+                            integratorSettings = boost::make_shared< AdamsBashforthMoultonSettings< > >(
+                                        simulationStartEpoch, 10.0,
+                                        1.0, std::numeric_limits< double >::infinity( ),
+                                        toleranceFactor * tolerance, 1E6 * toleranceFactor * tolerance );
+                        }
+                        else if( k == 10 )
+                        {
+                            double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
+                            integratorSettings = boost::make_shared< AdamsBashforthMoultonSettings< > >(
+                                        simulationStartEpoch, 10.0,
+                                        1.0, std::numeric_limits< double >::infinity( ),
+                                        toleranceFactor * tolerance, 1E6 * toleranceFactor * tolerance, 6, 6 );
+                        }
+                        else if( k == 11 )
+                        {
+                            double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
+                            integratorSettings = boost::make_shared< AdamsBashforthMoultonSettings< > >(
+                                        simulationStartEpoch, 10.0,
+                                        1.0, std::numeric_limits< double >::infinity( ),
+                                        toleranceFactor * tolerance, 1E6 * toleranceFactor * tolerance, 8, 8 );
+                        }
+                        else if( k == 12 )
+                        {
+                            double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
+                            integratorSettings = boost::make_shared< AdamsBashforthMoultonSettings< > >(
+                                        simulationStartEpoch, 10.0,
+                                        1.0, std::numeric_limits< double >::infinity( ),
+                                        toleranceFactor * tolerance, 1E6 * toleranceFactor * tolerance, 10, 10 );
+                        }
+                        else if( k == 13 )
+                        {
+                            double timeStep = std::pow( 2.0,  static_cast< double >( 1.0 + j ) );
+                            integratorSettings = boost::make_shared< AdamsBashforthMoultonSettings< > >(
+                                        simulationStartEpoch, timeStep,
+                                        timeStep, timeStep, 1.0, 1.0 );
+                        }
+
 
                         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                         ///////////////////////             PROPAGATE ORBIT            ////////////////////////////////////////////////////////
                         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                         // Create simulation object and propagate dynamics.
-                        SingleArcDynamicsSimulator< > dynamicsSimulator(
+                        SingleArcDynamicsSimulator< StateScalarType > dynamicsSimulator(
                                     bodyMap, integratorSettings, propagatorSettings );
-                        std::map< double, Eigen::VectorXd > integrationResult = dynamicsSimulator.getEquationsOfMotionNumericalSolution( );
+                        functionEvaluationCounter[ k ] = dynamicsSimulator.getDynamicsStateDerivative( )->getNumberOfFunctionEvaluations( );
+                        std::cout<<"Function evaluations: "<<functionEvaluationCounter[ k ]<<std::endl;
+                        std::map< double, Eigen::Matrix< StateScalarType, Eigen::Dynamic, 1 > > integrationResult =
+                                dynamicsSimulator.getEquationsOfMotionNumericalSolution( );
 
                         std::map< double, Eigen::VectorXd > integrationError;
                         if( accelerationCase == 0 )
@@ -275,13 +340,15 @@ int main()
 
                             // Compare propagated orbit against numerical result.
                             Eigen::VectorXd analyticalSolution;
-                            for( std::map< double, Eigen::VectorXd >::const_iterator resultIterator = integrationResult.begin( );
+                            for( typename std::map< double, Eigen::Matrix< StateScalarType, Eigen::Dynamic, 1 > >::const_iterator
+                                 resultIterator = integrationResult.begin( );
                                  resultIterator != integrationResult.end( ); resultIterator++ )
                             {
                                 analyticalSolution = convertKeplerianToCartesianElements( propagateKeplerOrbit(
                                                                                               asterixInitialStateInKeplerianElements, resultIterator->first, earthGravitationalParameter ),
                                                                                           earthGravitationalParameter );
-                                integrationError[ resultIterator->first ] = resultIterator->second - analyticalSolution;
+                                integrationError[ resultIterator->first ] = resultIterator->second.template cast< double >( ) -
+                                        analyticalSolution;
                             }
                         }
 
@@ -289,10 +356,10 @@ int main()
                         ///////////////////////        PROPAGATE BACKWARDS IN TIME                   //////////////////////////////////////////
                         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-                        if( k == 0 && accelerationCase == 0 )
+                        if( k < 4 )
                         {
                             double propagationEndTime = integrationResult.rbegin( )->first;
-                            Eigen::VectorXd propagationEndState = integrationResult.rbegin( )->second;
+                            Eigen::Matrix< StateScalarType, Eigen::Dynamic, 1 > propagationEndState = integrationResult.rbegin( )->second;
 
                             systemInitialState = propagationEndState;
 
@@ -300,25 +367,29 @@ int main()
                                     ( rungeKutta4, propagationEndTime, -std::pow( 10.0, j ) );
 
                             propagatorSettings =
-                                    boost::make_shared< TranslationalStatePropagatorSettings< double > >
-                                    ( centralBodies, accelerationModelMap, bodiesToPropagate, systemInitialState, simulationStartEpoch, cowell );
+                                    boost::make_shared< TranslationalStatePropagatorSettings< StateScalarType > >
+                                    ( centralBodies, accelerationModelMap, bodiesToPropagate, systemInitialState,
+                                      boost::make_shared< PropagationTimeTerminationSettings >( simulationStartEpoch, true ), cowell );
 
                             // Create simulation object and propagate dynamics.
-                            SingleArcDynamicsSimulator< > dynamicsSimulator2(
+                            SingleArcDynamicsSimulator< StateScalarType > dynamicsSimulator2(
                                         bodyMap, integratorSettings, propagatorSettings );
-                            std::map< double, Eigen::VectorXd > integrationResult2 = dynamicsSimulator2.getEquationsOfMotionNumericalSolution( );
+                            std::map< double, Eigen::Matrix< StateScalarType, Eigen::Dynamic, 1 > > integrationResult2 =
+                                    dynamicsSimulator2.getEquationsOfMotionNumericalSolution( );
                             std::map< double, Eigen::VectorXd > integrationError2;
 
                             // Compare propagated orbit against numerical result.
                             Eigen::VectorXd analyticalSolution;
-                            for( std::map< double, Eigen::VectorXd >::const_iterator resultIterator = integrationResult2.begin( );
+                            for( typename std::map< double, Eigen::Matrix< StateScalarType, Eigen::Dynamic, 1 > >::const_iterator
+                                 resultIterator = integrationResult2.begin( );
                                  resultIterator != integrationResult2.end( ); resultIterator++ )
                             {
                                 analyticalSolution = convertKeplerianToCartesianElements(
                                             propagateKeplerOrbit(
                                                 asterixInitialStateInKeplerianElements, resultIterator->first, earthGravitationalParameter ),
                                             earthGravitationalParameter );
-                                integrationError2[ resultIterator->first ] = resultIterator->second - analyticalSolution;
+                                integrationError2[ resultIterator->first ] = resultIterator->second.template cast< double >( ) -
+                                            analyticalSolution;
                             }
 
                             // Write satellite propagation history to file.
@@ -326,6 +397,7 @@ int main()
                                                                   "numericalKeplerOrbitBack_eccSett_" + boost::lexical_cast< std::string >( i ) +
                                                                   "_intType"  + boost::lexical_cast< std::string >( k ) +
                                                                   "_intSett"  + boost::lexical_cast< std::string >( j ) +
+                                                                  fileSuffix +
                                                                   ".dat",
                                                                   outputDirectory,
                                                                   "",
@@ -338,6 +410,7 @@ int main()
                                                                   "numericalKeplerOrbitErrorBack_e_" + boost::lexical_cast< std::string >( i ) +
                                                                   "_intType"  + boost::lexical_cast< std::string >( k ) +
                                                                   "_intSett"  + boost::lexical_cast< std::string >( j ) +
+                                                                  fileSuffix +
                                                                   ".dat",
                                                                   outputDirectory,
                                                                   "",
@@ -358,6 +431,7 @@ int main()
                                                               "_intSett"  + boost::lexical_cast< std::string >( j ) +
                                                               "_propSett"  + boost::lexical_cast< std::string >( l ) +
                                                               "_accSett"  + boost::lexical_cast< std::string >( accelerationCase ) +
+                                                              fileSuffix +
                                                               ".dat",
                                                               outputDirectory,
                                                               "",
@@ -372,6 +446,7 @@ int main()
                                                                   "numericalKeplerOrbitError_e_" + boost::lexical_cast< std::string >( i ) +
                                                                   "_intType"  + boost::lexical_cast< std::string >( k ) +
                                                                   "_intSett"  + boost::lexical_cast< std::string >( j ) +
+                                                                  fileSuffix +
                                                                   ".dat",
                                                                   outputDirectory,
                                                                   "",
@@ -381,9 +456,27 @@ int main()
                         }
                     }
                 }
+                input_output::writeDataMapToTextFile( functionEvaluationCounter ,
+                                                      "functionEvaluations_e_" + boost::lexical_cast< std::string >( i ) +
+                                                      "_intSett"  + boost::lexical_cast< std::string >( j ) +
+                                                      fileSuffix +
+                                                      ".dat",
+                                                      outputDirectory,
+                                                      "",
+                                                      std::numeric_limits< double >::digits10,
+                                                      std::numeric_limits< double >::digits10,
+                                                      "," );
             }
         }
     }
+
+}
+
+int main()
+{
+    //runSimulations< double >( );
+    runSimulations< double >( );
+    runSimulations< long double >( );
 
 
     // Final statement.
