@@ -32,6 +32,8 @@ install_manifest.txt
 
 # Data files
 *.dat
+*.mat
+*.zip
 
 # Figure files
 *.eps

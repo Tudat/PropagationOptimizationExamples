@@ -2,6 +2,10 @@ clc
 clear all
 close all
 
+set(0, 'defaultLegendInterpreter','latex');
+set(0, 'defaultAxesTickLabelInterpreter','latex');
+set(0, 'defaultTextInterpreter','latex');
+
 dataPath = '../../SimulationOutput/AccelerationModels/';
 
 orbit= cell(3,3);
@@ -80,7 +84,7 @@ suptitle('Effect of third-body perturbations, Sun-centered propagation')
 
 figure(5)
 subplot(1,2,1)
-plot3(orbit{1,3}(:,2),orbit{1,3}(:,3),orbit{1,3}(:,4))
+plot3(orbit{1,1}(:,2),orbit{1,1}(:,3),orbit{1,1}(:,4))
 grid on
 xlabel('x-pos. [m]')
 ylabel('y-pos. [m]')
@@ -88,7 +92,7 @@ zlabel('z-pos. [m]')
 title('Moon-centered')
 
 subplot(1,2,2)
-plot3(orbit{1,3}(:,2),orbit{3,1}(:,3),orbit{3,1}(:,4))
+plot3(orbit{3,1}(:,2),orbit{3,1}(:,3),orbit{3,1}(:,4))
 grid on
 xlabel('x-pos. [m]')
 ylabel('y-pos. [m]')
@@ -108,3 +112,23 @@ end
 saveas(figure(3),strcat('PerturbationInfluence_MoonCentered'),'png')
 saveas(figure(4),strcat('PerturbationInfluence_SunCentered'),'png')
 saveas(figure(5),strcat('MoonOrbits_MoonAndSunCentered'),'png')
+
+%%
+sunState=load(strcat(dataPath,'sunStateComparison.dat'));
+earthState=load(strcat(dataPath,'earthStateComparison.dat'));
+moonState=load(strcat(dataPath,'moonStateComparison.dat'));
+%%
+close all
+correctOrbit = orbit{1,1}
+wrongOrbit = orbit{2,1};
+
+figure(6)
+subplot(1,2,1)
+plot(correctOrbit(:,1),correctOrbit(:,2),'b')
+hold on
+plot(correctOrbit(:,1),correctOrbit(:,3),'r')
+
+subplot(1,2,2)
+plot(correctOrbit(:,1),wrongOrbit(:,2),'b')
+hold on
+plot(correctOrbit(:,1),wrongOrbit(:,3),'r')

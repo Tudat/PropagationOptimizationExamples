@@ -51,7 +51,7 @@ int main()
     bodiesToCreate.push_back( "Venus" );
 
     std::map< std::string, boost::shared_ptr< BodySettings > > bodySettings =
-            getDefaultBodySettings( bodiesToCreate, -3600.0, 14.0 * tudat::physical_constants::JULIAN_DAY + 3600.0 );
+            getDefaultBodySettings( bodiesToCreate );//, -3600.0, 100.0 * tudat::physical_constants::JULIAN_DAY + 3600.0 );
 
     // Create Earth object
     NamedBodyMap bodyMap = createBodies( bodySettings );
@@ -164,7 +164,7 @@ int main()
 
             // Set simulation end epoch.
             const double simulationStartEpoch = 0.0;
-            const double simulationEndEpoch = 14.0 * tudat::physical_constants::JULIAN_DAY;
+            const double simulationEndEpoch = 100.0 * tudat::physical_constants::JULIAN_DAY;
 
             boost::shared_ptr< TranslationalStatePropagatorSettings< double > > propagatorSettings =
                     boost::make_shared< TranslationalStatePropagatorSettings< double > >
@@ -182,10 +182,25 @@ int main()
                         bodyMap, integratorSettings, propagatorSettings );
             std::map< double, Eigen::VectorXd > integrationResult = dynamicsSimulator.getEquationsOfMotionNumericalSolution( );
             std::map< double, Eigen::VectorXd > integrationResultToPrint;
+            std::map< double, Eigen::VectorXd > moonStatesToPrint;
+            std::map< double, Eigen::VectorXd > earthStatesToPrint;
+            std::map< double, Eigen::VectorXd > sunStatesToPrint;
 
             for( std::map< double, Eigen::VectorXd >::const_iterator stateIterator = integrationResult.begin( );
                  stateIterator != integrationResult.end( ); stateIterator++ )
             {
+                if( originCase == 0 && accelerationCase == 0 )
+                {
+                    moonStatesToPrint[ stateIterator->first ] =
+                            spice_interface::getBodyCartesianStateAtEpoch(
+                                "Moon", "SSB", "ECLIPJ2000", "None", stateIterator->first );
+                    earthStatesToPrint[ stateIterator->first ] =
+                            spice_interface::getBodyCartesianStateAtEpoch(
+                                "Earth", "SSB", "ECLIPJ2000", "None", stateIterator->first );
+                    sunStatesToPrint[ stateIterator->first ] =
+                            spice_interface::getBodyCartesianStateAtEpoch(
+                                "Sun", "SSB", "ECLIPJ2000", "None", stateIterator->first );
+                }
                 if( originCase == 0 )
                 {
                     integrationResultToPrint[ stateIterator->first ] = stateIterator->second;
@@ -236,6 +251,28 @@ int main()
                                                   std::numeric_limits< double >::digits10,
                                                   std::numeric_limits< double >::digits10,
                                                   "," );
+
+            if( originCase == 0 && accelerationCase == 0 )
+            {
+                input_output::writeDataMapToTextFile( moonStatesToPrint,
+                                                      "moonStateComparison.dat",
+                                                      outputDirectory, "",
+                                                      std::numeric_limits< double >::digits10,
+                                                      std::numeric_limits< double >::digits10,
+                                                      "," );
+                input_output::writeDataMapToTextFile( sunStatesToPrint,
+                                                      "sunStateComparison.dat",
+                                                      outputDirectory, "",
+                                                      std::numeric_limits< double >::digits10,
+                                                      std::numeric_limits< double >::digits10,
+                                                      "," );
+                input_output::writeDataMapToTextFile( earthStatesToPrint,
+                                                      "earthStateComparison.dat",
+                                                      outputDirectory, "",
+                                                      std::numeric_limits< double >::digits10,
+                                                      std::numeric_limits< double >::digits10,
+                                                      "," );
+            }
 
             // Final statement.
             // The exit code EXIT_SUCCESS indicates that the program was successfully executed.
