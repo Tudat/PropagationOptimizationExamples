@@ -12,6 +12,20 @@
 
 #include "propagationAndOptimization/applicationOutput.h"
 
+//! Execute propagation of orbit of spacecraft around the Earth, and save results in difference element types.
+/*!
+ *  Execute propagation of orbit of spacecraft around the Earth, and save results in difference element types, for non-singular
+ *  cases. The output consists of files containing:
+ *
+ *  - Cartesian state history
+ *  - Kepler element history
+ *  - Modified equinoctial element history
+ *  - Kepler orbit history, as propagated from initial state, in terms of Cartesian elements.
+ *
+ *  The first and last output can, together, be used to determine the state used in an Encke propagation, which uses the difference
+ *  between the actual orbit and some reference Kepler orbit.
+ */
+
 //! Execute propagation of orbit of Asterix around the Earth.
 int main()
 {

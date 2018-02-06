@@ -12,6 +12,29 @@
 
 #include "propagationAndOptimization/applicationOutput.h"
 
+//! Execute propagation of orbit of spacecraft around the Earth, and save results in difference element types.
+/*!
+ *  Execute propagation of orbit of spacecraft around the Earth, and save results in difference element types, for cases that
+ *  become singular when using Kepler/MEE elements. Four different cases are used:
+ *
+ *  testCase = 0: circular, non-equatorial
+ *  testCase = 1; non-circular, equatorial
+ *  testCase = 2; circular, equatorial
+ *  testCase = 3; non-circular, equatorial retrograde
+ *
+ *  The output consists of files containing, for each testCase:
+ *
+ *  - Cartesian state history
+ *  - Kepler element history
+ *  - Modified equinoctial element history
+ *  - Kepler orbit history, as propagated from initial state, in terms of Cartesian elements.
+ *  - Kepler orbit history, as propagated from initial state, in terms of modified equinoctial elements.
+
+ *
+ *  The first and last output can, together, be used to determine the state used in an Encke propagation, which uses the difference
+ *  between the actual orbit and some reference Kepler orbit.
+ */
+
 void propagateNearSingularOrbit(
         const int testCase )
 {
@@ -191,7 +214,6 @@ void propagateNearSingularOrbit(
     std::map< double, Eigen::VectorXd > meeResults;
     std::map< double, Eigen::VectorXd > meeResultsFromKepler;
     std::map< double, Eigen::VectorXd > keplerOrbitResults;
-    std::map< double, Eigen::VectorXd > usmResults;
 
 
     for( std::map< double, Eigen::VectorXd >::const_iterator resultIterator = integrationResult.begin( ); resultIterator !=
@@ -205,8 +227,6 @@ void propagateNearSingularOrbit(
                     propagateKeplerOrbit(
                         asterixInitialStateInKeplerianElements, resultIterator->first, earthGravitationalParameter ),
                     earthGravitationalParameter );
-        usmResults[ resultIterator->first ] = convertKeplerianToUnifiedStateModelElements(
-                    keplerOrbitResults[ resultIterator->first ], earthGravitationalParameter );
         meeResultsFromKepler[ resultIterator->first ] = convertKeplerianToModifiedEquinoctialElements(
                     Eigen::Vector6d( keplerOrbitResults[ resultIterator->first ] ) );
     }
@@ -232,14 +252,6 @@ void propagateNearSingularOrbit(
     // Write perturbed satellite propagation history to file.
     input_output::writeDataMapToTextFile( meeResults,
                                           "singlePerturbedSatellitePropagationMeeHistorySingular" + boost::lexical_cast< std::string >( testCase ) + ".dat",
-                                          outputDirectory,
-                                          "",
-                                          std::numeric_limits< double >::digits10,
-                                          std::numeric_limits< double >::digits10,
-                                          "," );
-
-    input_output::writeDataMapToTextFile( usmResults,
-                                          "singlePerturbedSatellitePropagationUsmHistorySingular" + boost::lexical_cast< std::string >( testCase ) + ".dat",
                                           outputDirectory,
                                           "",
                                           std::numeric_limits< double >::digits10,

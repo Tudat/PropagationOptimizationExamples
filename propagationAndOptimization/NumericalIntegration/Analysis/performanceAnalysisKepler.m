@@ -6,11 +6,17 @@ close all
 clear all
 clc
 
-folder = '../../SimulationOutput/NumericalIntegration/';
-saveResults = true;
-loadProcessedData = true;
-useLongValues = true;
 
+folder = '../../SimulationOutput/NumericalIntegration/';
+
+% Boolean denoting whether to load all results files separately, or if a
+% previously saved .mat file is available
+%
+loadProcessedData = true;
+
+% Define simulation settings
+saveResults = true;
+useLongValues = true;
 if( useLongValues )
     fileSuffix = '_long' ;
     titleSuffix = ', long double scalars';
@@ -23,8 +29,14 @@ end
 numberOfEccentricities = 7;
 
 if( loadProcessedData == false )
+    
+    % Load simulation results
     for l=0
+        
+        % Iterate over all eccentricities
         for i=0:(numberOfEccentricities-1)
+            
+            % Iterate over all tolerance/step size settings
             for j=0:5
                 tempEvaluations = load(strcat(folder,'functionEvaluations_e_',num2str(i),'_intSett',num2str(j),'_propSett',num2str(l),'_accSett0',fileSuffix,'.dat'));
                 functionEvaluations_Rk(i+1,j+1,1:4,l+1)= tempEvaluations(1:4,2)';
@@ -38,6 +50,7 @@ if( loadProcessedData == false )
                 forwardBackwardErrors_Rk(i+1,j+1,5,l+1)= tempErrors(9,3)';
                 forwardBackwardErrors_Abm(i+1,j+1,1:5,l+1)= tempErrors(10:14,3)';
                 
+                % Iterate over all integrators
                 for k=0:13
                     disp(strcat(num2str(i),'_',num2str(j),'_',num2str(k)))
                     if( k < 4 )
@@ -71,22 +84,21 @@ end
 
 %%
 
-clc
-close all
-
+% Define folder where to save data
 saveFolder = '/home/dominic/Documents/Courses/Propagation and Optimization/IntegrationFigures/';
 
+% Specify simulation settings
 eccentricities = [ 0.01, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95];
 fixedStepSize = [2 4 8 16 32 64];
-
 tolerances = toleranceMultiplier * [1E-15 1E-13 1E-11 1E-9];
 
+% Define propagator names
 propagatorTypes = cell(4,1);
 propagatorTypes{1} = 'Cowell';
 propagatorTypes{2} = 'Gauss-Kepler';
 propagatorTypes{3} = 'Gauss-MEE';
 
-
+% Define integrator names
 integratorTypes = cell(4,1);
 integratorTypes{1} = 'RK4';
 integratorTypes{2} = 'RKF4(5)';
@@ -110,6 +122,7 @@ abamTypes{5}='ABM fixed step, var. order';
 set(0,'defaultAxesFontSize',12)
 set(0,'defaultTextFontSize',12)
 
+% Define colors
 colors = [      0    0     0
     0         0.4470    0.7410
     0.8500    0.3250    0.0980
@@ -121,36 +134,49 @@ colors = [      0    0     0
 
 close all
 figureCounter = 1;
-l = 1;
-%%
 for l = 1
+    % Create figures for integration error as a function of time twice:
+    % once with, and once without curve that gives
+    % uncertainty obtained from forward/backward integration
     for addForwardBackwardLine = 0:1
+         
+        % Plot results for RKF integrators, plot each eccentricity in a different figure
         for i=1:numberOfEccentricities
             figure(figureCounter)
             figureCounter = figureCounter + 1;
+            
+            % Plot results for each time step/tolerance (same subplot;
+            % difference curve)
             for j=1:6
+                
+                % Plot results for each RKF integrator
                 for k=1:5
                     subplot(2,3,k)
                     
+                    % Define color to use (DOPRI has tolerances 100 times
+                    % higher)
                     if( k < 5 )
                         colorIndex = j;
                     else
                         colorIndex = j + 1;
                     end
                     
+                    % Define color to use (long double simulations have 
+                    % tolerances 100 times lower than double)
                     if( useLongValues == 0 || k == 1 )
                         colorIndex = colorIndex + 1;
                     end
                     
+                    % Plot simulated errors
                     semilogy(errorMap_Rk{i,j,k,l}(:,1),(errorMap_Rk{i,j,k,l}(:,2)'),'LineWidth',2,'Color',colors(colorIndex,:))
                     hold on
                     if( addForwardBackwardLine )
                         semilogy(errorMap_Rk{i,j,k,l}(:,1),ones(size(errorMap_Rk{i,j,k,l}(:,1)))*forwardBackwardErrors_Rk(i,j,k,l),'--','Color',colors(colorIndex,:))
                     end
-                    
-                    grid on
+                                        
+                    % Specify figure formatting
                     if(j==6 )
-                        
+                        grid on
                         if( k== 1)
                             legend('t=2 s','t=4 s','t=8 s','t=16 s','t=32 s','Location','SouthEast')
                         end
@@ -164,12 +190,9 @@ for l = 1
                             if( k== 2)
                                 legend('tol=10E-17','tol=10E-15','tol=10E-13','tol=10E-11','tol=10E-9','tol=10E-7','Location','SouthEast')
                             end
-                        end
-                        
-                        title(strcat(integratorTypes{k},titleSuffix))
-                        
-                        xlim([0 7*86400])
-                        
+                        end                        
+                        title(strcat(integratorTypes{k},titleSuffix))                        
+                        xlim([0 7*86400])                        
                         xlabel('t [s]');
                         ylabel('Position error [m]');
                         
@@ -177,11 +200,14 @@ for l = 1
                 end
             end
             
+            % Add supertitle and resize figure
             suptitle(strcat('Eccentricity=',num2str(eccentricities(i)),{' '},propagatorTypes{l}));
             pause(0.1)
             set(gcf, 'Units', 'normalized', 'Position', [0,0,0.75,0.75]);
             set(gcf,'PaperUnits','centimeters','PaperPosition',[0 0 45 30]);
             set(gcf,'PaperPositionMode','auto');
+            
+            % Save figure to file
             if( saveResults )
                 pause(0.1)
                 if( addForwardBackwardLine == 0 )
@@ -191,9 +217,8 @@ for l = 1
                 end
             end
         end
-        
-        close all
-        
+             
+        % Plot results for BS integrators, plot each eccentricity in a different figure
         for i=1:numberOfEccentricities
             figure(figureCounter)
             figureCounter = figureCounter + 1;
@@ -252,9 +277,7 @@ for l = 1
             end
         end
         
-        
-        close all
-        
+        % Plot results for ABAM integrators, plot each eccentricity in a different figure        
         for i=1:numberOfEccentricities
             figure(figureCounter)
             figureCounter = figureCounter + 1;
@@ -317,9 +340,9 @@ for l = 1
         end
     end
    %% 
-    close all
+    close all    
     
-    
+    % Specify line styles
     lineStyles = cell(5);
     lineStyles{1} = '-';
     lineStyles{2} = '--';
@@ -334,36 +357,43 @@ for l = 1
     lineWidths{4} = 1;
     lineWidths{5} = 2;
     
+    % Create integrator comparison plot for each eccentricity
     for i=1:numberOfEccentricities
         figure(figureCounter)
+        
+        % Plot RKF performance
         for k=1:5
             loglog(squeeze(functionEvaluations_Rk(i,:,k,l)),squeeze(maximumError_Rk(i,:,k,l)),strcat('b',lineStyles{k},'*'),'LineWidth',lineWidths{k})
             hold on
         end
         
+        % Plot BS performance
         for k=1:4
             loglog(squeeze(functionEvaluations_Bs(i,1:4,k,l)),squeeze(maximumError_Bs(i,1:4,k,l)),strcat('r',lineStyles{k},'*'),'LineWidth',lineWidths{k})
         end
         
+        % Plot ABM performance
         for k=1:5
             loglog(squeeze(functionEvaluations_Abm(i,1:5,k,l)),squeeze(maximumError_Abm(i,1:5,k,l)),strcat('k',lineStyles{k},'*'),'LineWidth',lineWidths{k})
         end
         grid on
         
+        
+        % Add figure formatting
         title(strcat('Eccentricity=',num2str(eccentricities(i)),{' '},titleSuffix));
-        legend('RK4','RK4(5)','RK5(6)','RK7(8)','DOPRI8(7)','BS4','BS6','BS8','BS10','ABM','ABM6','ABM8','ABM10','ABM-fixed step','Location','NorthEastOutside')
-        
+        legend('RK4','RK4(5)','RK5(6)','RK7(8)','DOPRI8(7)','BS4','BS6','BS8','BS10','ABM','ABM6','ABM8','ABM10','ABM-fixed step','Location','NorthEastOutside')        
         xlabel('Number of function evaluations [-]')
-        ylabel('Maximum position error (1 week integration time) [m]')
-        
+        ylabel('Maximum position error (1 week integration time) [m]')        
         ylim([1.0E-6 1.0E8])
         xlim([1E2 1E7])
         
+        % Resize figure
         pause(0.1)
         set(gcf, 'Units', 'normalized', 'Position', [0,0,0.5 0.5]);
         set(gcf,'PaperUnits','centimeters','PaperPosition',[0 0 30 20]);
         set(gcf,'PaperPositionMode','auto');
         
+        % Save figure to file
         if( saveResults )
             saveas(gcf,strcat(saveFolder,'accuracyTradeOff',num2str(i),fileSuffix),'png');
         end
@@ -373,36 +403,42 @@ for l = 1
     %%
     close all
     
+    % Create figures for time step as a function of time for RKF
+    % integrators
     for i=1:numberOfEccentricities
         figure(figureCounter)
         figureCounter = figureCounter + 1;
+        
+        % Plot results for each tolerance 
         for j=1:6
+            
+            % Plot results for each scheme (excluding RK4)
             for k=2:5
                 subplot(1,4,k-1)
-                sizes = size(errorMap_Rk{i,j,k,l}(:,1));
-                numberOfTimeStep = sizes(1);
+                
+                % Set plot colot
                 if( k < 5 )
                     colorIndex = j;
                 else
                     colorIndex = 1 + j;
                 end
                 
-                semilogy(errorMap_Rk{i,j,k,l}(2:numberOfTimeStep,1),errorMap_Rk{i,j,k,l}(2:numberOfTimeStep,1)-errorMap_Rk{i,j,k,l}(1:(numberOfTimeStep-1),1),'Color',colors(colorIndex,:));
-                
+                % Plot time step
+                sizes = size(errorMap_Rk{i,j,k,l}(:,1));
+                numberOfTimeStep = sizes(1);
+                semilogy(errorMap_Rk{i,j,k,l}(2:numberOfTimeStep,1),errorMap_Rk{i,j,k,l}(2:numberOfTimeStep,1)-errorMap_Rk{i,j,k,l}(1:(numberOfTimeStep-1),1),'Color',colors(colorIndex,:));                
                 hold on
-                grid on
                 
+                % Add figure formatting
                 if(j==6)
+                     grid on
                     title(integratorTypes{k})
-                    xlim([0 1.3E4])
-                    
+                    xlim([0 1.3E4])                    
                     xlabel('t [s]');
-                    ylabel('Step size [s]');
-                    
+                    ylabel('Step size [s]');                    
                     if( k== 1)
                         legend('t=2 s','t=4 s','t=8 s','t=16 s','t=32 s')
-                    end
-                    
+                    end                    
                     if( ~useLongValues )
                         if( k== 2)
                             legend('tol=10E-15','tol=10E-13','tol=10E-11','tol=10E-9','tol=10E-7','tol=10E-5','Location','SouthEast')
@@ -415,8 +451,11 @@ for l = 1
                 end
             end
         end
+        
+        % Add supertitle
         suptitle(strcat('Eccentricity=',num2str(eccentricities(i)),{' '},titleSuffix));
         
+        % Resize and save
         set(gcf, 'Units', 'normalized', 'Position', [0,0,0.75 0.75]);
         set(gcf,'PaperUnits','centimeters','PaperPosition',[0 0 45 30]);
         set(gcf,'PaperPositionMode','auto');

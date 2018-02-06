@@ -149,7 +149,7 @@ boost::shared_ptr< IntegratorSettings< > > getIntegratorSettings(
     return integratorSettings;
 }
 
-//! Execute propagation of orbit of Asterix around the Earth.
+//! Execute propagation of orbit of spacecraft around the Earth.
 /*!
  *
  *  This function performs a numerical integration of equations of motion for various settings, with the goal of providing
@@ -187,6 +187,7 @@ boost::shared_ptr< IntegratorSettings< > > getIntegratorSettings(
  *        2: Gauss - MEE
  *        3: Encke
  */
+
 template< typename StateScalarType = double >
 void runSimulations( )
 {

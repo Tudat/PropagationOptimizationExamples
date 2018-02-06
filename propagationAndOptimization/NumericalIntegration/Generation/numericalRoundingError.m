@@ -1,6 +1,15 @@
+set(0, 'defaultLegendInterpreter','latex');
+set(0, 'defaultAxesTickLabelInterpreter','latex');
+set(0, 'defaultTextInterpreter','latex');
+
+set(0,'defaultAxesFontSize',12)
+set(0,'defaultTextFontSize',12)
+
 clc
 close all
 clear all
+
+saveFolder = '/home/dominic/Documents/Courses/Propagation and Optimization/IntegrationFigures/';
 
 
 for j=1:4
@@ -26,7 +35,7 @@ for j=1:4
     end
     
     trueValues(j,1) = trueValue;
-
+    
     
     subplot(2,2,j)
     
@@ -34,5 +43,13 @@ for j=1:4
     grid on
     xlabel('N [-]','interpreter','latex')
     ylabel('Error [-]','interpreter','latex')
+    
     title(strcat('Error in computation of $1 + N\alpha$ ($N\alpha=$',num2str(step),')'),'interpreter','latex')
+    
 end
+
+set(gcf, 'Units', 'normalized', 'Position', [0,0,0.75 0.5]);
+set(gcf,'PaperUnits','centimeters','PaperPosition',[0 0 45 30]);
+set(gcf,'PaperPositionMode','auto');
+
+saveas(gcf,strcat(saveFolder,'roundingErrorExample'),'png');

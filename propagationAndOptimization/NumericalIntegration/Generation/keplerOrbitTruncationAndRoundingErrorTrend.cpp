@@ -8,15 +8,33 @@
  *    http://tudat.tudelft.nl/LICENSE.
  */
 
+#include <ctime>
+
 #include <Tudat/SimulationSetup/tudatSimulationHeader.h>
 
 #include "propagationAndOptimization/applicationOutput.h"
 
 
-//! Execute propagation of orbit of Asterix around the Earth.
-int main()
+//! Execute propagation of orbit of spacecraft around the Earth, using an RK4 integrator with a range of time step
+/*!
+ *  Execute propagation of orbit of spacecraft around the Earth, using only a point mass Earth acceleration model, using an RK4
+ *  integrator with a range of time step. Since the orbit has an analytical solution (Kepler orbit), we can determine the
+ *  integration error for each numerical integration. The output of this executable is used to visualize the impact of
+ *  truncation and rounding errors.
+ *
+ *  The simulation is run with double precision state/time values, as well as long double state and split (int + long double)
+ *  time representation.
+ */
+template< typename StateScalarType, typename TimeType >
+void runIntegrationErrorSimulation( )
 {
     std::string outputDirectory = tudat_applications::getOutputPath( "NumericalIntegration/" );
+
+    std::string fileSuffix = "";
+    if( !( sizeof( StateScalarType ) == 8 ) )
+    {
+        fileSuffix = "_long";
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////            USING STATEMENTS              //////////////////////////////////////////////////////
@@ -40,8 +58,6 @@ int main()
     // Create body objects.
     std::vector< std::string > bodiesToCreate;
     bodiesToCreate.push_back( "Earth" );
-    bodiesToCreate.push_back( "Moon" );
-    bodiesToCreate.push_back( "Sun" );
 
     std::map< std::string, boost::shared_ptr< BodySettings > > bodySettings =
             getDefaultBodySettings( bodiesToCreate );
@@ -52,32 +68,6 @@ int main()
 
     // Create spacecraft object.
     bodyMap[ "Asterix" ] = boost::make_shared< simulation_setup::Body >( );
-    bodyMap[ "Asterix" ]->setConstantBodyMass( 400.0 );
-
-    // Create aerodynamic coefficient interface settings.
-    double referenceArea = 4.0;
-    double aerodynamicCoefficient = 1.2;
-    boost::shared_ptr< AerodynamicCoefficientSettings > aerodynamicCoefficientSettings =
-            boost::make_shared< ConstantAerodynamicCoefficientSettings >(
-                referenceArea, aerodynamicCoefficient * Eigen::Vector3d::UnitX( ), 1, 1 );
-
-    // Create and set aerodynamic coefficients object
-    bodyMap[ "Asterix" ]->setAerodynamicCoefficientInterface(
-                createAerodynamicCoefficientInterface( aerodynamicCoefficientSettings, "Asterix" ) );
-
-    // Create radiation pressure settings
-    double referenceAreaRadiation = 4.0;
-    double radiationPressureCoefficient = 1.2;
-    std::vector< std::string > occultingBodies;
-    occultingBodies.push_back( "Earth" );
-    boost::shared_ptr< RadiationPressureInterfaceSettings > asterixRadiationPressureSettings =
-            boost::make_shared< CannonBallRadiationPressureInterfaceSettings >(
-                "Sun", referenceAreaRadiation, radiationPressureCoefficient, occultingBodies );
-
-    // Create and set radiation pressure settings
-    bodyMap[ "Asterix" ]->setRadiationPressureInterface(
-                "Sun", createRadiationPressureInterface(
-                    asterixRadiationPressureSettings, "Asterix", bodyMap ) );
 
     // Finalize body creation.
     setGlobalFrameBodyEphemerides( bodyMap, "Earth", "ECLIPJ2000" );
@@ -113,14 +103,17 @@ int main()
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     std::map< double, Eigen::VectorXd > integrationError;
-    for( double stepExponent = -2.0; stepExponent <= 3.0; stepExponent += 0.1 )
+    std::map< double, double > runTimes;
+    for( double stepExponent = -2.0; stepExponent <= 3.0; stepExponent += 0.05 )
     {
+        clock_t begin = clock();
+
         // Set initial conditions for the Asterix satellite that will be propagated in this simulation.
         // The initial conditions are given in Keplerian elements and later on converted to Cartesian
         // elements.
 
         // Set Keplerian elements for Asterix.
-        Eigen::Vector6d asterixInitialStateInKeplerianElements;
+        Eigen::Matrix< StateScalarType, 6, 1 > asterixInitialStateInKeplerianElements;
         asterixInitialStateInKeplerianElements( semiMajorAxisIndex ) = 7500.0E3;
         asterixInitialStateInKeplerianElements( eccentricityIndex ) = 0.1;
         asterixInitialStateInKeplerianElements( inclinationIndex ) = convertDegreesToRadians( 85.3 );
@@ -132,7 +125,7 @@ int main()
 
         // Convert Asterix state from Keplerian elements to Cartesian elements.
         double earthGravitationalParameter = bodyMap.at( "Earth" )->getGravityFieldModel( )->getGravitationalParameter( );
-        Eigen::VectorXd systemInitialState = convertKeplerianToCartesianElements(
+        Eigen::Matrix< StateScalarType, 6, 1 > systemInitialState = convertKeplerianToCartesianElements< StateScalarType >(
                     asterixInitialStateInKeplerianElements,
                     earthGravitationalParameter );
 
@@ -141,14 +134,16 @@ int main()
         const double simulationStartEpoch = 0.0;
         const double simulationEndEpoch = 3.0 * 3600.0;
 
-        std::cout<<stepExponent<<" "<<std::pow( 10, stepExponent )<<" ";
+        std::cout<<"Exponent of time step: "<<stepExponent<<", time step: "<<std::pow( 10, stepExponent )<<", ";
 
         TranslationalPropagatorType propagatorType = cowell;
-        boost::shared_ptr< TranslationalStatePropagatorSettings< double > > propagatorSettings =
-                boost::make_shared< TranslationalStatePropagatorSettings< double > >
-                ( centralBodies, accelerationModelMap, bodiesToPropagate, systemInitialState, simulationEndEpoch, propagatorType );
+        boost::shared_ptr< TranslationalStatePropagatorSettings< StateScalarType > > propagatorSettings =
+                boost::make_shared< TranslationalStatePropagatorSettings< StateScalarType > >
+                ( centralBodies, accelerationModelMap, bodiesToPropagate, systemInitialState.template cast< StateScalarType >( ),
+                  simulationEndEpoch, propagatorType );
 
-        boost::shared_ptr< IntegratorSettings< > > integratorSettings = boost::make_shared< IntegratorSettings< > >
+        boost::shared_ptr< IntegratorSettings< TimeType > > integratorSettings =
+                boost::make_shared< IntegratorSettings< TimeType > >
                     ( rungeKutta4, simulationStartEpoch, std::pow( 10, stepExponent ) );
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -157,35 +152,52 @@ int main()
 
 
         // Create simulation object and propagate dynamics.
-        SingleArcDynamicsSimulator< > dynamicsSimulator(
+        SingleArcDynamicsSimulator< StateScalarType, TimeType > dynamicsSimulator(
                     bodyMap, integratorSettings, propagatorSettings );
-        std::map< double, Eigen::VectorXd > integrationResult = dynamicsSimulator.getEquationsOfMotionNumericalSolution( );
+        Eigen::Matrix< StateScalarType, Eigen::Dynamic, 1 > propagationEndState =
+                dynamicsSimulator.getEquationsOfMotionNumericalSolution( ).rbegin( )->second;
+        double finalPropagationTime =
+                dynamicsSimulator.getEquationsOfMotionNumericalSolution( ).rbegin( )->first;
+        clock_t end = clock();
 
-        boost::shared_ptr< interpolators::OneDimensionalInterpolator< double, Eigen::VectorXd > > stateInterpolator =
-                boost::make_shared< interpolators::LagrangeInterpolator< double, Eigen::VectorXd > >(
-                    integrationResult, 8 );
+        double elapsedSeconds = double(end - begin) / CLOCKS_PER_SEC;
 
-        double propagationEndTime = 2.5 * 3600.0;
-        Eigen::VectorXd propagationEndState = stateInterpolator->interpolate( propagationEndTime );
 
-        Eigen::VectorXd analyticalSolution = convertKeplerianToCartesianElements(
-                    propagateKeplerOrbit(
-                        asterixInitialStateInKeplerianElements, propagationEndTime, earthGravitationalParameter ),
+       Eigen::Matrix< StateScalarType, Eigen::Dynamic, 1 > analyticalSolution =
+               convertKeplerianToCartesianElements< StateScalarType >(
+                    propagateKeplerOrbit< StateScalarType >(
+                        asterixInitialStateInKeplerianElements, finalPropagationTime, earthGravitationalParameter ),
                     earthGravitationalParameter );
 
-        integrationError[ stepExponent ] = propagationEndState - analyticalSolution;
-        std::cout<<( propagationEndState - analyticalSolution ).transpose( )<<std::endl;
+        integrationError[ stepExponent ] = ( propagationEndState - analyticalSolution ).template cast< double >( );
+        runTimes[ stepExponent ] = elapsedSeconds;
+        std::cout<<"final error: "<<( propagationEndState - analyticalSolution ).transpose( )<<std::endl;
+        std::cout<<"Run time: "<<elapsedSeconds<<std::endl<<std::endl;
 
 
     }
 
     input_output::writeDataMapToTextFile( integrationError,
-                                          "integrationErrorBehaviour.dat",
+                                          "integrationErrorBehaviour" + fileSuffix + ".dat",
                                           outputDirectory,
                                           "",
                                           std::numeric_limits< double >::digits10,
                                           std::numeric_limits< double >::digits10,
                                           "," );
+
+    input_output::writeDataMapToTextFile( runTimes,
+                                          "integrationRunTime" + fileSuffix + ".dat",
+                                          outputDirectory,
+                                          "",
+                                          std::numeric_limits< double >::digits10,
+                                          std::numeric_limits< double >::digits10,
+                                          "," );
+}
+
+int main()
+{
+    //runIntegrationErrorSimulation< double, double >( );
+    runIntegrationErrorSimulation< long double, tudat::Time >( );
 
     // Final statement.
     // The exit code EXIT_SUCCESS indicates that the program was successfully executed.

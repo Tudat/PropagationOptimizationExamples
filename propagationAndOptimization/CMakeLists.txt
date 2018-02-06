@@ -257,9 +257,9 @@ add_executable(po_application_MutualGravitationalInteraction "${SRCROOT}/Acceler
 setup_executable_target(po_application_MutualGravitationalInteraction "${SRCROOT}")
 target_link_libraries(po_application_MutualGravitationalInteraction ${TUDAT_APPLICATION_ESTIMATION_LIBRARIES} ${Boost_LIBRARIES} )
 
-add_executable(po_application_MutualExtendedGravitationalInteraction "${SRCROOT}/AccelerationModels/Generation/mutualExtendedGravitationalInteractionPhobos.cpp")
-setup_executable_target(po_application_MutualExtendedGravitationalInteraction "${SRCROOT}")
-target_link_libraries(po_application_MutualExtendedGravitationalInteraction ${TUDAT_APPLICATION_ESTIMATION_LIBRARIES} ${Boost_LIBRARIES} )
+#add_executable(po_application_MutualExtendedGravitationalInteraction "${SRCROOT}/AccelerationModels/Generation/mutualExtendedGravitationalInteractionPhobos.cpp")
+#setup_executable_target(po_application_MutualExtendedGravitationalInteraction "${SRCROOT}")
+#target_link_libraries(po_application_MutualExtendedGravitationalInteraction ${TUDAT_APPLICATION_ESTIMATION_LIBRARIES} ${Boost_LIBRARIES} )
 
 add_executable(po_application_PhobosRadiationPressure "${SRCROOT}/AccelerationModels/Generation/phobosOrbitPropagationWithRadiationPressure.cpp")
 setup_executable_target(po_application_PhobosRadiationPressure "${SRCROOT}")
