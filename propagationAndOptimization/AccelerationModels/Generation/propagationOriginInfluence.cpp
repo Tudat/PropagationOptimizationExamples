@@ -50,14 +50,14 @@ int main()
     bodiesToCreate.push_back( "Mars" );
     bodiesToCreate.push_back( "Venus" );
 
-    std::map< std::string, boost::shared_ptr< BodySettings > > bodySettings =
+    std::map< std::string, std::shared_ptr< BodySettings > > bodySettings =
             getDefaultBodySettings( bodiesToCreate );//, -3600.0, 100.0 * tudat::physical_constants::JULIAN_DAY + 3600.0 );
 
     // Create Earth object
     NamedBodyMap bodyMap = createBodies( bodySettings );
 
     // Create spacecraft object.
-    bodyMap[ "LunarOrbiter" ] = boost::make_shared< simulation_setup::Body >( );
+    bodyMap[ "LunarOrbiter" ] = std::make_shared< simulation_setup::Body >( );
 
     // Finalize body creation.
     setGlobalFrameBodyEphemerides( bodyMap, "SSB", "ECLIPJ2000" );
@@ -96,36 +96,36 @@ int main()
 
 
             // Define propagation settings.
-            std::map< std::string, std::vector< boost::shared_ptr< AccelerationSettings > > > accelerationsOfLunarOrbiter;
+            std::map< std::string, std::vector< std::shared_ptr< AccelerationSettings > > > accelerationsOfLunarOrbiter;
 
             if( accelerationCase == 0 )
             {
-                accelerationsOfLunarOrbiter[ "Moon" ].push_back( boost::make_shared< AccelerationSettings >(
+                accelerationsOfLunarOrbiter[ "Moon" ].push_back( std::make_shared< AccelerationSettings >(
                                                                      basic_astrodynamics::central_gravity ) );
             }
             else if( accelerationCase == 1 )
             {
-                accelerationsOfLunarOrbiter[ "Earth" ].push_back( boost::make_shared< AccelerationSettings >(
+                accelerationsOfLunarOrbiter[ "Earth" ].push_back( std::make_shared< AccelerationSettings >(
                                                                       basic_astrodynamics::central_gravity ) );
-                accelerationsOfLunarOrbiter[ "Moon" ].push_back( boost::make_shared< AccelerationSettings >(
+                accelerationsOfLunarOrbiter[ "Moon" ].push_back( std::make_shared< AccelerationSettings >(
                                                                      basic_astrodynamics::central_gravity ) );
-                accelerationsOfLunarOrbiter[ "Sun" ].push_back( boost::make_shared< AccelerationSettings >(
+                accelerationsOfLunarOrbiter[ "Sun" ].push_back( std::make_shared< AccelerationSettings >(
                                                                     basic_astrodynamics::central_gravity ) );
 
             }
             else if( accelerationCase == 2 )
             {
-                accelerationsOfLunarOrbiter[ "Earth" ].push_back( boost::make_shared< AccelerationSettings >(
+                accelerationsOfLunarOrbiter[ "Earth" ].push_back( std::make_shared< AccelerationSettings >(
                                                                       basic_astrodynamics::central_gravity ) );
-                accelerationsOfLunarOrbiter[ "Moon" ].push_back( boost::make_shared< AccelerationSettings >(
+                accelerationsOfLunarOrbiter[ "Moon" ].push_back( std::make_shared< AccelerationSettings >(
                                                                      basic_astrodynamics::central_gravity ) );
-                accelerationsOfLunarOrbiter[ "Sun" ].push_back( boost::make_shared< AccelerationSettings >(
+                accelerationsOfLunarOrbiter[ "Sun" ].push_back( std::make_shared< AccelerationSettings >(
                                                                     basic_astrodynamics::central_gravity ) );
-                accelerationsOfLunarOrbiter[ "Jupiter" ].push_back( boost::make_shared< AccelerationSettings >(
+                accelerationsOfLunarOrbiter[ "Jupiter" ].push_back( std::make_shared< AccelerationSettings >(
                                                                         basic_astrodynamics::central_gravity ) );
-                accelerationsOfLunarOrbiter[ "Mars" ].push_back( boost::make_shared< AccelerationSettings >(
+                accelerationsOfLunarOrbiter[ "Mars" ].push_back( std::make_shared< AccelerationSettings >(
                                                                      basic_astrodynamics::central_gravity ) );
-                accelerationsOfLunarOrbiter[ "Venus" ].push_back( boost::make_shared< AccelerationSettings >(
+                accelerationsOfLunarOrbiter[ "Venus" ].push_back( std::make_shared< AccelerationSettings >(
                                                                       basic_astrodynamics::central_gravity ) );
             }
             accelerationMap[  "LunarOrbiter" ] = accelerationsOfLunarOrbiter;
@@ -166,11 +166,11 @@ int main()
             const double simulationStartEpoch = 0.0;
             const double simulationEndEpoch = 100.0 * tudat::physical_constants::JULIAN_DAY;
 
-            boost::shared_ptr< TranslationalStatePropagatorSettings< double > > propagatorSettings =
-                    boost::make_shared< TranslationalStatePropagatorSettings< double > >
+            std::shared_ptr< TranslationalStatePropagatorSettings< double > > propagatorSettings =
+                    std::make_shared< TranslationalStatePropagatorSettings< double > >
                     ( centralBodies, accelerationModelMap, bodiesToPropagate, systemInitialState, simulationEndEpoch, cowell );
 
-            boost::shared_ptr< IntegratorSettings< > > integratorSettings = boost::make_shared< IntegratorSettings< > >
+            std::shared_ptr< IntegratorSettings< > > integratorSettings = std::make_shared< IntegratorSettings< > >
                     ( rungeKutta4, simulationStartEpoch, 10.0 );
 
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -9,6 +9,7 @@
  */
 
 #include <Tudat/SimulationSetup/tudatSimulationHeader.h>
+#include <Tudat/External/SpiceInterface/spiceInterface.h>
 
 #include "propagationAndOptimization/applicationOutput.h"
 
@@ -29,6 +30,7 @@ void propagatePhobosOrbit(
     using namespace tudat::basic_mathematics;
     using namespace tudat::gravitation;
     using namespace tudat::numerical_integrators;
+    using namespace tudat::spice_interface;
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -50,7 +52,7 @@ void propagatePhobosOrbit(
     bodiesToCreate.push_back( "Mars" );
 
     // Create body objects.
-    std::map< std::string, boost::shared_ptr< BodySettings > > bodySettings =
+    std::map< std::string, std::shared_ptr< BodySettings > > bodySettings =
             getDefaultBodySettings( bodiesToCreate, simulationStartEpoch - 86400.0, simulationEndEpoch + 86400.0 );
     for( unsigned int i = 0; i < bodiesToCreate.size( ); i++ )
     {
@@ -64,7 +66,7 @@ void propagatePhobosOrbit(
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Create spacecraft object.
-    bodyMap[ "Phobos" ] = boost::make_shared< simulation_setup::Body >( );
+    bodyMap[ "Phobos" ] = std::make_shared< simulation_setup::Body >( );
     bodyMap[ "Phobos" ]->setConstantBodyMass( 1.0E16 );
 
     // Create radiation pressure settings
@@ -72,8 +74,8 @@ void propagatePhobosOrbit(
     double radiationPressureCoefficient = 1.2;
     std::vector< std::string > occultingBodies;
     occultingBodies.push_back( "Mars" );
-    boost::shared_ptr< RadiationPressureInterfaceSettings > phobosRadiationPressureSettings =
-            boost::make_shared< CannonBallRadiationPressureInterfaceSettings >(
+    std::shared_ptr< RadiationPressureInterfaceSettings > phobosRadiationPressureSettings =
+            std::make_shared< CannonBallRadiationPressureInterfaceSettings >(
                 "Sun", referenceAreaRadiation, radiationPressureCoefficient, occultingBodies );
 
     // Create and set radiation pressure settings
@@ -95,15 +97,15 @@ void propagatePhobosOrbit(
     std::vector< std::string > centralBodies;
 
     // Define propagation settings.
-    std::map< std::string, std::vector< boost::shared_ptr< AccelerationSettings > > > accelerationsOfPhobos;
-    accelerationsOfPhobos[ "Sun" ].push_back( boost::make_shared< AccelerationSettings >(
+    std::map< std::string, std::vector< std::shared_ptr< AccelerationSettings > > > accelerationsOfPhobos;
+    accelerationsOfPhobos[ "Sun" ].push_back( std::make_shared< AccelerationSettings >(
                                                   basic_astrodynamics::central_gravity ) );
-    accelerationsOfPhobos[ "Mars" ].push_back( boost::make_shared< AccelerationSettings >(
+    accelerationsOfPhobos[ "Mars" ].push_back( std::make_shared< AccelerationSettings >(
                                                    basic_astrodynamics::central_gravity ) );
 
     if( testCase == 1 )
     {
-        accelerationsOfPhobos[ "Sun" ].push_back( boost::make_shared< AccelerationSettings >(
+        accelerationsOfPhobos[ "Sun" ].push_back( std::make_shared< AccelerationSettings >(
                                                       basic_astrodynamics::cannon_ball_radiation_pressure ) );
     }
 
@@ -135,13 +137,13 @@ void propagatePhobosOrbit(
                 phobosInitialStateInKeplerianElements, marsGravitationalParameter );
 
 
-    boost::shared_ptr< TranslationalStatePropagatorSettings< double > > propagatorSettings =
-            boost::make_shared< TranslationalStatePropagatorSettings< double > >
+    std::shared_ptr< TranslationalStatePropagatorSettings< double > > propagatorSettings =
+            std::make_shared< TranslationalStatePropagatorSettings< double > >
             ( centralBodies, accelerationModelMap, bodiesToPropagate, phobosInitialState, simulationEndEpoch, encke );
 
     const double fixedStepSize = 600.0;
-    boost::shared_ptr< IntegratorSettings< > > integratorSettings =
-            boost::make_shared< RungeKuttaVariableStepSizeSettings< > >
+    std::shared_ptr< IntegratorSettings< > > integratorSettings =
+            std::make_shared< RungeKuttaVariableStepSizeSettings< > >
             ( rungeKuttaVariableStepSize, 0.0, fixedStepSize,
               RungeKuttaCoefficients::CoefficientSets::rungeKuttaFehlberg78, fixedStepSize, fixedStepSize, 1.0, 1.0 );
 

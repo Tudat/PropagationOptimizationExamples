@@ -56,11 +56,11 @@ int main()
 //    bodiesToCreate.push_back( "Moon" );
 
     std::cout<<"T1"<<std::endl;
-    std::map< std::string, boost::shared_ptr< BodySettings > > bodySettings =
+    std::map< std::string, std::shared_ptr< BodySettings > > bodySettings =
             getDefaultBodySettings( bodiesToCreate );
     std::cout<<"T1"<<std::endl;
 
-    bodySettings[ "Sun" ]->gravityFieldSettings = boost::make_shared< SphericalHarmonicsGravityFieldSettings >(
+    bodySettings[ "Sun" ]->gravityFieldSettings = std::make_shared< SphericalHarmonicsGravityFieldSettings >(
                 getBodyGravitationalParameter( "Sun" ), 695.7E6,
                 ( Eigen::Matrix3d( ) << 1.0, 0.0, 0.0,
                   0.0, 0.0, 0.0,
@@ -109,17 +109,17 @@ int main()
                     if( bodiesToCreate.at( j )  != "Sun" )
                     {
                         accelerationMap[ bodiesToCreate.at( i ) ][ bodiesToCreate.at( j ) ].push_back(
-                                    boost::make_shared< AccelerationSettings >( basic_astrodynamics::central_gravity ) );
+                                    std::make_shared< AccelerationSettings >( basic_astrodynamics::central_gravity ) );
                     }
                     else if( simulationCase == 0 )
                     {
                         accelerationMap[ bodiesToCreate.at( i ) ][ bodiesToCreate.at( j ) ].push_back(
-                                boost::make_shared< AccelerationSettings >( basic_astrodynamics::central_gravity ) );
+                                std::make_shared< AccelerationSettings >( basic_astrodynamics::central_gravity ) );
                     }
                     else if( simulationCase == 1 )
                     {
                         accelerationMap[ bodiesToCreate.at( i ) ][ bodiesToCreate.at( j ) ].push_back(
-                                boost::make_shared< SphericalHarmonicAccelerationSettings >( 2, 0 ) );
+                                std::make_shared< SphericalHarmonicAccelerationSettings >( 2, 0 ) );
                     }
                 }
                 std::cout<<i<<" "<<j<<std::endl;
@@ -138,12 +138,12 @@ int main()
         Eigen::VectorXd systemInitialState = getInitialStatesOfBodies(
                    bodiesToPropagate, centralBodies, bodyMap, simulationStartEpoch );
 
-        boost::shared_ptr< TranslationalStatePropagatorSettings< double > > propagatorSettings =
-                boost::make_shared< TranslationalStatePropagatorSettings< double > >
+        std::shared_ptr< TranslationalStatePropagatorSettings< double > > propagatorSettings =
+                std::make_shared< TranslationalStatePropagatorSettings< double > >
                 ( centralBodies, accelerationModelMap, bodiesToPropagate, systemInitialState, simulationEndEpoch, cowell );
 
-        boost::shared_ptr< IntegratorSettings< > > integratorSettings =
-                boost::make_shared< RungeKuttaVariableStepSizeSettings< > >(
+        std::shared_ptr< IntegratorSettings< > > integratorSettings =
+                std::make_shared< RungeKuttaVariableStepSizeSettings< > >(
                     rungeKuttaVariableStepSize, simulationStartEpoch, 3600.0,
                     numerical_integrators::RungeKuttaCoefficients::rungeKuttaFehlberg78,
                     std::numeric_limits< double >::epsilon( ), std::numeric_limits< double >::infinity( ),
@@ -158,8 +158,8 @@ int main()
                     bodyMap, integratorSettings, propagatorSettings );
         std::map< double, Eigen::VectorXd > integrationResult = dynamicsSimulator.getEquationsOfMotionNumericalSolution( );
 
-        boost::shared_ptr< interpolators::OneDimensionalInterpolator< double, Eigen::VectorXd > > stateInterpolator =
-                boost::make_shared< interpolators::LagrangeInterpolator< double, Eigen::VectorXd > >(
+        std::shared_ptr< interpolators::OneDimensionalInterpolator< double, Eigen::VectorXd > > stateInterpolator =
+                std::make_shared< interpolators::LagrangeInterpolator< double, Eigen::VectorXd > >(
                     integrationResult, 8 );
 
         std::map< double, Eigen::VectorXd > integrationResultToSave;

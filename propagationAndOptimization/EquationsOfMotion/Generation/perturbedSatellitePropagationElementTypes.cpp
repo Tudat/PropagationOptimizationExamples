@@ -9,6 +9,7 @@
  */
 
 #include <Tudat/SimulationSetup/tudatSimulationHeader.h>
+#include <Tudat/JsonInterface/Propagation/propagator.h>
 
 #include "propagationAndOptimization/applicationOutput.h"
 
@@ -66,7 +67,7 @@ int main()
     bodiesToCreate.push_back( "Venus" );
 
     // Create body objects.
-    std::map< std::string, boost::shared_ptr< BodySettings > > bodySettings =
+    std::map< std::string, std::shared_ptr< BodySettings > > bodySettings =
             getDefaultBodySettings( bodiesToCreate, simulationStartEpoch - 300.0, simulationEndEpoch + 300.0 );
     for( unsigned int i = 0; i < bodiesToCreate.size( ); i++ )
     {
@@ -80,14 +81,14 @@ int main()
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Create spacecraft object.
-    bodyMap[ "Asterix" ] = boost::make_shared< simulation_setup::Body >( );
+    bodyMap[ "Asterix" ] = std::make_shared< simulation_setup::Body >( );
     bodyMap[ "Asterix" ]->setConstantBodyMass( 400.0 );
 
     // Create aerodynamic coefficient interface settings.
     double referenceArea = 4.0;
     double aerodynamicCoefficient = 1.2;
-    boost::shared_ptr< AerodynamicCoefficientSettings > aerodynamicCoefficientSettings =
-            boost::make_shared< ConstantAerodynamicCoefficientSettings >(
+    std::shared_ptr< AerodynamicCoefficientSettings > aerodynamicCoefficientSettings =
+            std::make_shared< ConstantAerodynamicCoefficientSettings >(
                 referenceArea, aerodynamicCoefficient * Eigen::Vector3d::UnitX( ), 1, 1 );
 
     // Create and set aerodynamic coefficients object
@@ -99,8 +100,8 @@ int main()
     double radiationPressureCoefficient = 1.2;
     std::vector< std::string > occultingBodies;
     occultingBodies.push_back( "Earth" );
-    boost::shared_ptr< RadiationPressureInterfaceSettings > asterixRadiationPressureSettings =
-            boost::make_shared< CannonBallRadiationPressureInterfaceSettings >(
+    std::shared_ptr< RadiationPressureInterfaceSettings > asterixRadiationPressureSettings =
+            std::make_shared< CannonBallRadiationPressureInterfaceSettings >(
                 "Sun", referenceAreaRadiation, radiationPressureCoefficient, occultingBodies );
 
     // Create and set radiation pressure settings
@@ -122,20 +123,20 @@ int main()
     std::vector< std::string > centralBodies;
 
     // Define propagation settings.
-    std::map< std::string, std::vector< boost::shared_ptr< AccelerationSettings > > > accelerationsOfAsterix;
-    accelerationsOfAsterix[ "Earth" ].push_back( boost::make_shared< SphericalHarmonicAccelerationSettings >( 5, 5 ) );
+    std::map< std::string, std::vector< std::shared_ptr< AccelerationSettings > > > accelerationsOfAsterix;
+    accelerationsOfAsterix[ "Earth" ].push_back( std::make_shared< SphericalHarmonicAccelerationSettings >( 5, 5 ) );
 
-    accelerationsOfAsterix[ "Sun" ].push_back( boost::make_shared< AccelerationSettings >(
+    accelerationsOfAsterix[ "Sun" ].push_back( std::make_shared< AccelerationSettings >(
                                                    basic_astrodynamics::central_gravity ) );
-    accelerationsOfAsterix[ "Moon" ].push_back( boost::make_shared< AccelerationSettings >(
+    accelerationsOfAsterix[ "Moon" ].push_back( std::make_shared< AccelerationSettings >(
+                                                    basic_astrodynamics::central_gravity ) );
+    accelerationsOfAsterix[ "Mars" ].push_back( std::make_shared< AccelerationSettings >(
+                                                    basic_astrodynamics::central_gravity ) );
+    accelerationsOfAsterix[ "Venus" ].push_back( std::make_shared< AccelerationSettings >(
                                                      basic_astrodynamics::central_gravity ) );
-    accelerationsOfAsterix[ "Mars" ].push_back( boost::make_shared< AccelerationSettings >(
-                                                     basic_astrodynamics::central_gravity ) );
-    accelerationsOfAsterix[ "Venus" ].push_back( boost::make_shared< AccelerationSettings >(
-                                                     basic_astrodynamics::central_gravity ) );
-    accelerationsOfAsterix[ "Sun" ].push_back( boost::make_shared< AccelerationSettings >(
-                                                     basic_astrodynamics::cannon_ball_radiation_pressure ) );
-    accelerationsOfAsterix[ "Earth" ].push_back( boost::make_shared< AccelerationSettings >(
+    accelerationsOfAsterix[ "Sun" ].push_back( std::make_shared< AccelerationSettings >(
+                                                   basic_astrodynamics::cannon_ball_radiation_pressure ) );
+    accelerationsOfAsterix[ "Earth" ].push_back( std::make_shared< AccelerationSettings >(
                                                      basic_astrodynamics::aerodynamic ) );
 
     accelerationMap[  "Asterix" ] = accelerationsOfAsterix;
@@ -165,13 +166,13 @@ int main()
                 asterixInitialStateInKeplerianElements, earthGravitationalParameter );
 
 
-    boost::shared_ptr< TranslationalStatePropagatorSettings< double > > propagatorSettings =
-            boost::make_shared< TranslationalStatePropagatorSettings< double > >
+    std::shared_ptr< TranslationalStatePropagatorSettings< double > > propagatorSettings =
+            std::make_shared< TranslationalStatePropagatorSettings< double > >
             ( centralBodies, accelerationModelMap, bodiesToPropagate, asterixInitialState, simulationEndEpoch );
 
     const double fixedStepSize = 10.0;
-    boost::shared_ptr< IntegratorSettings< > > integratorSettings =
-            boost::make_shared< IntegratorSettings< > >
+    std::shared_ptr< IntegratorSettings< > > integratorSettings =
+            std::make_shared< IntegratorSettings< > >
             ( rungeKutta4, 0.0, fixedStepSize );
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -186,6 +187,10 @@ int main()
     std::map< double, Eigen::VectorXd > keplerianResults;
     std::map< double, Eigen::VectorXd > meeResults;
     std::map< double, Eigen::VectorXd > keplerOrbitResults;
+    std::map< double, Eigen::VectorXd > usm7OrbitResults;
+    std::map< double, Eigen::VectorXd > usm6OrbitResults;
+    std::map< double, Eigen::VectorXd > usmEmOrbitResults;
+
 
     for( std::map< double, Eigen::VectorXd >::const_iterator resultIterator = integrationResult.begin( ); resultIterator !=
          integrationResult.end( ); resultIterator++ )
@@ -194,11 +199,48 @@ int main()
                     Eigen::Vector6d( resultIterator->second ), earthGravitationalParameter );
         meeResults[ resultIterator->first ]  = convertCartesianToModifiedEquinoctialElements(
                     Eigen::Vector6d( resultIterator->second ), earthGravitationalParameter, false );
-        keplerOrbitResults[ resultIterator->first ]  = convertKeplerianToCartesianElements( propagateKeplerOrbit(
-                    asterixInitialStateInKeplerianElements, resultIterator->first, earthGravitationalParameter ),
-                                                                                            earthGravitationalParameter );
+
+        usm7OrbitResults[ resultIterator->first ]  = convertCartesianToUnifiedStateModelQuaternionsElements(
+                    Eigen::Vector6d( resultIterator->second ), earthGravitationalParameter );
+        usm6OrbitResults[ resultIterator->first ]  = convertCartesianToUnifiedStateModelModifiedRodriguesParameterElements(
+                    Eigen::Vector6d( resultIterator->second ), earthGravitationalParameter );
+        usmEmOrbitResults[ resultIterator->first ]  = convertCartesianToUnifiedStateModelExponentialMapElements(
+                    Eigen::Vector6d( resultIterator->second ), earthGravitationalParameter );
+
+
+        keplerOrbitResults[ resultIterator->first ]  = convertKeplerianToCartesianElements(
+                    propagateKeplerOrbit(
+                        asterixInitialStateInKeplerianElements, resultIterator->first, earthGravitationalParameter ),
+                    earthGravitationalParameter );
+
+
+
     }
 
+
+    for( int propagatorType = 1; propagatorType < 7; propagatorType++ )
+    {
+        std::shared_ptr< TranslationalStatePropagatorSettings< double > > propagatorSettings =
+                std::make_shared< TranslationalStatePropagatorSettings< double > >
+                ( centralBodies, accelerationModelMap, bodiesToPropagate, asterixInitialState, simulationEndEpoch,
+                  static_cast< TranslationalPropagatorType >( propagatorType ) );
+
+        SingleArcDynamicsSimulator< > dynamicsSimulator(
+                    bodyMap, integratorSettings, propagatorSettings, true, false, false );
+
+        std::string propagatorString = tudat::propagators::translationalPropagatorTypes.at(
+                    static_cast< TranslationalPropagatorType >( propagatorType )  );
+
+        // Write perturbed satellite propagation history to file.
+        input_output::writeDataMapToTextFile(
+                     dynamicsSimulator.getEquationsOfMotionNumericalSolutionRaw( ),
+                    "rawPropagatedState_" + propagatorString + ".dat",
+                    outputDirectory,
+                    "",
+                    std::numeric_limits< double >::digits10,
+                    std::numeric_limits< double >::digits10,
+                    "," );
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////        PROVIDE OUTPUT TO CONSOLE AND FILES           //////////////////////////////////////////
@@ -242,6 +284,33 @@ int main()
     // Write perturbed satellite propagation history to file.
     input_output::writeDataMapToTextFile( meeResults,
                                           "singlePerturbedSatellitePropagationMeeHistory.dat",
+                                          outputDirectory,
+                                          "",
+                                          std::numeric_limits< double >::digits10,
+                                          std::numeric_limits< double >::digits10,
+                                          "," );
+
+    // Write perturbed satellite propagation history to file.
+    input_output::writeDataMapToTextFile( usm7OrbitResults,
+                                          "singlePerturbedSatellitePropagationUSM7History.dat",
+                                          outputDirectory,
+                                          "",
+                                          std::numeric_limits< double >::digits10,
+                                          std::numeric_limits< double >::digits10,
+                                          "," );
+
+    // Write perturbed satellite propagation history to file.
+    input_output::writeDataMapToTextFile( usm6OrbitResults,
+                                          "singlePerturbedSatellitePropagationUSM6History.dat",
+                                          outputDirectory,
+                                          "",
+                                          std::numeric_limits< double >::digits10,
+                                          std::numeric_limits< double >::digits10,
+                                          "," );
+
+    // Write perturbed satellite propagation history to file.
+    input_output::writeDataMapToTextFile( usmEmOrbitResults,
+                                          "singlePerturbedSatellitePropagationUSMEMHistory.dat",
                                           outputDirectory,
                                           "",
                                           std::numeric_limits< double >::digits10,

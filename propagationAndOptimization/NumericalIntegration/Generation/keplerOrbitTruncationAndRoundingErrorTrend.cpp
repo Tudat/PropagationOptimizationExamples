@@ -59,7 +59,7 @@ void runIntegrationErrorSimulation( )
     std::vector< std::string > bodiesToCreate;
     bodiesToCreate.push_back( "Earth" );
 
-    std::map< std::string, boost::shared_ptr< BodySettings > > bodySettings =
+    std::map< std::string, std::shared_ptr< BodySettings > > bodySettings =
             getDefaultBodySettings( bodiesToCreate );
 
 
@@ -67,7 +67,7 @@ void runIntegrationErrorSimulation( )
     NamedBodyMap bodyMap = createBodies( bodySettings );
 
     // Create spacecraft object.
-    bodyMap[ "Asterix" ] = boost::make_shared< simulation_setup::Body >( );
+    bodyMap[ "Asterix" ] = std::make_shared< simulation_setup::Body >( );
 
     // Finalize body creation.
     setGlobalFrameBodyEphemerides( bodyMap, "Earth", "ECLIPJ2000" );
@@ -85,9 +85,9 @@ void runIntegrationErrorSimulation( )
     centralBodies.push_back( "Earth" );
 
     // Define propagation settings.
-    std::map< std::string, std::vector< boost::shared_ptr< AccelerationSettings > > > accelerationsOfAsterix;
+    std::map< std::string, std::vector< std::shared_ptr< AccelerationSettings > > > accelerationsOfAsterix;
 
-    accelerationsOfAsterix[ "Earth" ].push_back( boost::make_shared< AccelerationSettings >(
+    accelerationsOfAsterix[ "Earth" ].push_back( std::make_shared< AccelerationSettings >(
                                                      basic_astrodynamics::central_gravity ) );
     accelerationMap[  "Asterix" ] = accelerationsOfAsterix;
 
@@ -137,13 +137,13 @@ void runIntegrationErrorSimulation( )
         std::cout<<"Exponent of time step: "<<stepExponent<<", time step: "<<std::pow( 10, stepExponent )<<", ";
 
         TranslationalPropagatorType propagatorType = cowell;
-        boost::shared_ptr< TranslationalStatePropagatorSettings< StateScalarType > > propagatorSettings =
-                boost::make_shared< TranslationalStatePropagatorSettings< StateScalarType > >
+        std::shared_ptr< TranslationalStatePropagatorSettings< StateScalarType > > propagatorSettings =
+                std::make_shared< TranslationalStatePropagatorSettings< StateScalarType > >
                 ( centralBodies, accelerationModelMap, bodiesToPropagate, systemInitialState.template cast< StateScalarType >( ),
                   simulationEndEpoch, propagatorType );
 
-        boost::shared_ptr< IntegratorSettings< TimeType > > integratorSettings =
-                boost::make_shared< IntegratorSettings< TimeType > >
+        std::shared_ptr< IntegratorSettings< TimeType > > integratorSettings =
+                std::make_shared< IntegratorSettings< TimeType > >
                     ( rungeKutta4, simulationStartEpoch, std::pow( 10, stepExponent ) );
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

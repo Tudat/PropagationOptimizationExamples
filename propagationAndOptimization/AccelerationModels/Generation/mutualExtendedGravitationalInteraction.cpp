@@ -58,12 +58,12 @@ int main()
     bodiesToCreate.push_back( "Mars" );
     bodiesToCreate.push_back( "Venus" );
 
-    std::map< std::string, boost::shared_ptr< BodySettings > > bodySettings =
+    std::map< std::string, std::shared_ptr< BodySettings > > bodySettings =
             getDefaultBodySettings( bodiesToCreate, simulationStartEpoch - 86400.0, simulationEndEpoch + 86400.0  );
 
-    bodySettings[ "Moon" ]->rotationModelSettings = boost::make_shared< RotationModelSettings >(
+    bodySettings[ "Moon" ]->rotationModelSettings = std::make_shared< RotationModelSettings >(
                 spice_rotation_model, "ECLIPJ2000", "MOON_PA" );
-    boost::dynamic_pointer_cast< SphericalHarmonicsGravityFieldSettings >(
+    std::dynamic_pointer_cast< SphericalHarmonicsGravityFieldSettings >(
                 bodySettings[ "Moon" ]->gravityFieldSettings )->resetAssociatedReferenceFrame( "MOON_PA" );
 
 
@@ -88,23 +88,23 @@ int main()
         centralBodies.push_back( "Earth" );
 
         // Define propagation settings.
-        std::map< std::string, std::vector< boost::shared_ptr< AccelerationSettings > > > accelerationsOfMoon;
+        std::map< std::string, std::vector< std::shared_ptr< AccelerationSettings > > > accelerationsOfMoon;
 
         if( accelerationCase == 0 )
         {
-            accelerationsOfMoon[ "Earth" ].push_back( boost::make_shared< MutualExtendedBodySphericalHarmonicAccelerationSettings >(
+            accelerationsOfMoon[ "Earth" ].push_back( std::make_shared< MutualExtendedBodySphericalHarmonicAccelerationSettings >(
                                                           4, 4, 4, 4 ) );
         }
         else
         {
-            accelerationsOfMoon[ "Earth" ].push_back( boost::make_shared< MutualSphericalHarmonicAccelerationSettings >(
+            accelerationsOfMoon[ "Earth" ].push_back( std::make_shared< MutualSphericalHarmonicAccelerationSettings >(
                                                           4, 4, 4, 4 ) );
 
         }
-        accelerationsOfMoon[ "Sun" ].push_back( boost::make_shared< AccelerationSettings >( central_gravity ) );
-        accelerationsOfMoon[ "Jupiter" ].push_back( boost::make_shared< AccelerationSettings >( central_gravity ) );
-        accelerationsOfMoon[ "Mars" ].push_back( boost::make_shared< AccelerationSettings >( central_gravity ) );
-        accelerationsOfMoon[ "Venus" ].push_back( boost::make_shared< AccelerationSettings >( central_gravity ) );
+        accelerationsOfMoon[ "Sun" ].push_back( std::make_shared< AccelerationSettings >( central_gravity ) );
+        accelerationsOfMoon[ "Jupiter" ].push_back( std::make_shared< AccelerationSettings >( central_gravity ) );
+        accelerationsOfMoon[ "Mars" ].push_back( std::make_shared< AccelerationSettings >( central_gravity ) );
+        accelerationsOfMoon[ "Venus" ].push_back( std::make_shared< AccelerationSettings >( central_gravity ) );
 
         accelerationMap[ "Moon" ] = accelerationsOfMoon;
 
@@ -116,19 +116,19 @@ int main()
         Eigen::VectorXd systemInitialState = spice_interface::getBodyCartesianStateAtEpoch(
                     "Moon", "Earth", "ECLIPJ2000", "None", simulationStartEpoch );
 
-        std::vector< boost::shared_ptr< SingleDependentVariableSaveSettings > > dependentVariables;
+        std::vector< std::shared_ptr< SingleDependentVariableSaveSettings > > dependentVariables;
         dependentVariables.push_back(
-                    boost::make_shared< MutualExtendedSphericalHarmonicAccelerationTermsDependentVariableSaveSettings >(
+                    std::make_shared< MutualExtendedSphericalHarmonicAccelerationTermsDependentVariableSaveSettings >(
                         "Moon", "Earth", 2, 2, 2, 2 ) );
 
 
-        boost::shared_ptr< PropagatorSettings< double > > propagatorSettings =
-                boost::make_shared< TranslationalStatePropagatorSettings< double > >
+        std::shared_ptr< PropagatorSettings< double > > propagatorSettings =
+                std::make_shared< TranslationalStatePropagatorSettings< double > >
                 ( centralBodies, accelerationModelMap, bodiesToPropagate, systemInitialState, simulationEndEpoch,
-                  cowell, boost::make_shared< DependentVariableSaveSettings >( dependentVariables ) );
+                  cowell, std::make_shared< DependentVariableSaveSettings >( dependentVariables ) );
 
-        boost::shared_ptr< IntegratorSettings< > > integratorSettings =
-                        boost::make_shared< RungeKuttaVariableStepSizeSettings< > >
+        std::shared_ptr< IntegratorSettings< > > integratorSettings =
+                        std::make_shared< RungeKuttaVariableStepSizeSettings< > >
                         ( rungeKuttaVariableStepSize, simulationStartEpoch, 1800.0,
                           RungeKuttaCoefficients::rungeKuttaFehlberg78, 1800.0, 1800.0, 1.0, 1.0 );
 
@@ -162,8 +162,8 @@ int main()
 //            using namespace estimatable_parameters;
 
 //            // Check input consistency
-//            boost::shared_ptr< propagators::TranslationalStatePropagatorSettings< double > > translationalPropagatorSettings =
-//                    boost::dynamic_pointer_cast< propagators::TranslationalStatePropagatorSettings< double > >( propagatorSettings ) ;
+//            std::shared_ptr< propagators::TranslationalStatePropagatorSettings< double > > translationalPropagatorSettings =
+//                    std::dynamic_pointer_cast< propagators::TranslationalStatePropagatorSettings< double > >( propagatorSettings ) ;
 
 
 //            // Getlist of bodies for which the dynamics is to be fit
@@ -172,7 +172,7 @@ int main()
 //            // Create list of ideal observation settings and initial states to estimate
 //            std::vector< LinkEnds > linkEndsList;
 //            ObservationSettingsMap observationSettingsMap;
-//            std::vector< boost::shared_ptr< EstimatableParameterSettings > > initialStateParameterNames;
+//            std::vector< std::shared_ptr< EstimatableParameterSettings > > initialStateParameterNames;
 //            for( unsigned int i = 0; i < observedBodies.size( ); i++ )
 //            {
 //                // Add current body to list of observed bodies
@@ -180,18 +180,18 @@ int main()
 //                observationLinkEnds[ observed_body ] = std::make_pair( observedBodies.at( i ), "" );
 //                linkEndsList.push_back( observationLinkEnds );
 //                observationSettingsMap.insert(
-//                            std::make_pair( observationLinkEnds, boost::make_shared< ObservationSettings >(
+//                            std::make_pair( observationLinkEnds, std::make_shared< ObservationSettings >(
 //                                                position_observable ) ) );
 
 //                // Add current body to list of estimated bodies
 //                initialStateParameterNames.push_back(
-//                            boost::make_shared< InitialTranslationalStateEstimatableParameterSettings< double > >(
+//                            std::make_shared< InitialTranslationalStateEstimatableParameterSettings< double > >(
 //                                observedBodies.at( i ), translationalPropagatorSettings->getInitialStates( ).segment( i * 6, 6 ),
 //                                translationalPropagatorSettings->centralBodies_.at( i ) ) );
 //            }
 
 //            // Create initial state estimation objects
-//            boost::shared_ptr< EstimatableParameterSet< double > > initialStateParametersToEstimate =
+//            std::shared_ptr< EstimatableParameterSet< double > > initialStateParametersToEstimate =
 //                    createParametersToEstimate< double >( initialStateParameterNames, bodyMap );
 
 //            // Get range over which observations are to be simulated.
@@ -229,12 +229,12 @@ int main()
 
 
 //            accelerationsOfMoon.clear( );
-//            accelerationsOfMoon[ "Earth" ].push_back( boost::make_shared< MutualSphericalHarmonicAccelerationSettings >(
+//            accelerationsOfMoon[ "Earth" ].push_back( std::make_shared< MutualSphericalHarmonicAccelerationSettings >(
 //                                                          4, 4, 4, 4 ) );
-//            accelerationsOfMoon[ "Sun" ].push_back( boost::make_shared< AccelerationSettings >( central_gravity ) );
-//            accelerationsOfMoon[ "Jupiter" ].push_back( boost::make_shared< AccelerationSettings >( central_gravity ) );
-//            accelerationsOfMoon[ "Mars" ].push_back( boost::make_shared< AccelerationSettings >( central_gravity ) );
-//            accelerationsOfMoon[ "Venus" ].push_back( boost::make_shared< AccelerationSettings >( central_gravity ) );
+//            accelerationsOfMoon[ "Sun" ].push_back( std::make_shared< AccelerationSettings >( central_gravity ) );
+//            accelerationsOfMoon[ "Jupiter" ].push_back( std::make_shared< AccelerationSettings >( central_gravity ) );
+//            accelerationsOfMoon[ "Mars" ].push_back( std::make_shared< AccelerationSettings >( central_gravity ) );
+//            accelerationsOfMoon[ "Venus" ].push_back( std::make_shared< AccelerationSettings >( central_gravity ) );
 
 //            accelerationMap.clear( );
 //            accelerationMap[ "Moon" ] = accelerationsOfMoon;
@@ -247,8 +247,8 @@ int main()
 //            Eigen::VectorXd systemInitialState = spice_interface::getBodyCartesianStateAtEpoch(
 //                        "Moon", "Earth", "ECLIPJ2000", "None", simulationStartEpoch );
 
-//            boost::shared_ptr< PropagatorSettings< double > > reducedPropagatorSettings =
-//                    boost::make_shared< TranslationalStatePropagatorSettings< double > >
+//            std::shared_ptr< PropagatorSettings< double > > reducedPropagatorSettings =
+//                    std::make_shared< TranslationalStatePropagatorSettings< double > >
 //                    ( centralBodies, reducedAccelerationModelMap, bodiesToPropagate, systemInitialState, simulationEndEpoch,
 //                      cowell );
 
@@ -262,15 +262,15 @@ int main()
 //            Eigen::VectorXd nominalBodyStates = initialStateParametersToEstimate->template getFullParameterValues< double >( );
 
 //            // Define estimation input
-//            boost::shared_ptr< PodInput< double, double > > podInput =
-//                    boost::make_shared< PodInput< double, double > >(
+//            std::shared_ptr< PodInput< double, double > > podInput =
+//                    std::make_shared< PodInput< double, double > >(
 //                        observationsAndTimes, initialStateParametersToEstimate->getParameterSetSize( ) );
 //            podInput->defineEstimationSettings( true, true, false, true, true );
 
 
 //            // Fit nominal dynamics to pertrubed dynamical model
-//            boost::shared_ptr< PodOutput< double > > podOutput = orbitDeterminationManager.estimateParameters(
-//                        podInput, boost::make_shared< EstimationConvergenceChecker >( 3 ) );
+//            std::shared_ptr< PodOutput< double > > podOutput = orbitDeterminationManager.estimateParameters(
+//                        podInput, std::make_shared< EstimationConvergenceChecker >( 3 ) );
 
 //            std::cout<<initialStateParametersToEstimate->template getFullParameterValues< double >( ) - nominalBodyStates<<std::endl;
 

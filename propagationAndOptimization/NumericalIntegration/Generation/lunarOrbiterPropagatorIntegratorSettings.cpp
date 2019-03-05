@@ -25,20 +25,20 @@ using namespace tudat::basic_mathematics;
 using namespace tudat::unit_conversions;
 
 
-boost::shared_ptr< IntegratorSettings< > > getIntegratorSettings(
+std::shared_ptr< IntegratorSettings< > > getIntegratorSettings(
         const int j, const int k, const double simulationStartEpoch, const double toleranceFactor, const double timeStepMultiplier = 1.0 )
 {
-    boost::shared_ptr< IntegratorSettings< > > integratorSettings;
+    std::shared_ptr< IntegratorSettings< > > integratorSettings;
     if( k == 0 )
     {
         double timeStep = timeStepMultiplier * std::pow( 2.0,  static_cast< double >( 1.0 + j ) );
-        integratorSettings = boost::make_shared< IntegratorSettings< > >
+        integratorSettings = std::make_shared< IntegratorSettings< > >
                 ( rungeKutta4, simulationStartEpoch, timeStep );
     }
     else if( k == 1 )
     {
         double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
-        integratorSettings = boost::make_shared< RungeKuttaVariableStepSizeSettings< > >(
+        integratorSettings = std::make_shared< RungeKuttaVariableStepSizeSettings< > >(
                     rungeKuttaVariableStepSize, simulationStartEpoch, timeStepMultiplier * 10.0,
                     numerical_integrators::RungeKuttaCoefficients::rungeKuttaFehlberg45,
                     std::numeric_limits< double >::epsilon( ), std::numeric_limits< double >::infinity( ),
@@ -47,7 +47,7 @@ boost::shared_ptr< IntegratorSettings< > > getIntegratorSettings(
     else if( k == 2 )
     {
         double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
-        integratorSettings = boost::make_shared< RungeKuttaVariableStepSizeSettings< > >(
+        integratorSettings = std::make_shared< RungeKuttaVariableStepSizeSettings< > >(
                     rungeKuttaVariableStepSize, simulationStartEpoch, timeStepMultiplier * 10.0,
                     numerical_integrators::RungeKuttaCoefficients::rungeKuttaFehlberg56,
                     std::numeric_limits< double >::epsilon( ), std::numeric_limits< double >::infinity( ),
@@ -56,7 +56,7 @@ boost::shared_ptr< IntegratorSettings< > > getIntegratorSettings(
     else if( k == 3 )
     {
         double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
-        integratorSettings = boost::make_shared< RungeKuttaVariableStepSizeSettings< > >(
+        integratorSettings = std::make_shared< RungeKuttaVariableStepSizeSettings< > >(
                     rungeKuttaVariableStepSize, simulationStartEpoch, timeStepMultiplier * 10.0,
                     numerical_integrators::RungeKuttaCoefficients::rungeKuttaFehlberg78,
                     std::numeric_limits< double >::epsilon( ), std::numeric_limits< double >::infinity( ),
@@ -65,7 +65,7 @@ boost::shared_ptr< IntegratorSettings< > > getIntegratorSettings(
     else if( k == 4 )
     {
         double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
-        integratorSettings = boost::make_shared< tudat::numerical_integrators::BulirschStoerIntegratorSettings< > >(
+        integratorSettings = std::make_shared< tudat::numerical_integrators::BulirschStoerIntegratorSettings< > >(
                     simulationStartEpoch, timeStepMultiplier * 10.0,
                     numerical_integrators::bulirsch_stoer_sequence, 4,
                     std::numeric_limits< double >::epsilon( ), std::numeric_limits< double >::infinity( ),
@@ -74,7 +74,7 @@ boost::shared_ptr< IntegratorSettings< > > getIntegratorSettings(
     else if( k == 5 )
     {
         double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
-        integratorSettings = boost::make_shared< tudat::numerical_integrators::BulirschStoerIntegratorSettings< > >(
+        integratorSettings = std::make_shared< tudat::numerical_integrators::BulirschStoerIntegratorSettings< > >(
                     simulationStartEpoch, timeStepMultiplier * 10.0,
                     numerical_integrators::bulirsch_stoer_sequence, 6,
                     std::numeric_limits< double >::epsilon( ), std::numeric_limits< double >::infinity( ),
@@ -83,7 +83,7 @@ boost::shared_ptr< IntegratorSettings< > > getIntegratorSettings(
     else if( k == 6 )
     {
         double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
-        integratorSettings = boost::make_shared< tudat::numerical_integrators::BulirschStoerIntegratorSettings< > >(
+        integratorSettings = std::make_shared< tudat::numerical_integrators::BulirschStoerIntegratorSettings< > >(
                     simulationStartEpoch, timeStepMultiplier * 10.0,
                     numerical_integrators::bulirsch_stoer_sequence, 8,
                     std::numeric_limits< double >::epsilon( ), std::numeric_limits< double >::infinity( ),
@@ -92,7 +92,7 @@ boost::shared_ptr< IntegratorSettings< > > getIntegratorSettings(
     else if( k == 7 )
     {
         double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
-        integratorSettings = boost::make_shared< tudat::numerical_integrators::BulirschStoerIntegratorSettings< > >(
+        integratorSettings = std::make_shared< tudat::numerical_integrators::BulirschStoerIntegratorSettings< > >(
                     simulationStartEpoch, timeStepMultiplier * 10.0,
                     numerical_integrators::bulirsch_stoer_sequence, 10,
                     std::numeric_limits< double >::epsilon( ), std::numeric_limits< double >::infinity( ),
@@ -101,7 +101,7 @@ boost::shared_ptr< IntegratorSettings< > > getIntegratorSettings(
     else if( k == 8 )
     {
         double tolerance = std::pow( 10.0, static_cast< double >( -13.0 + 2.0 * j ) );
-        integratorSettings = boost::make_shared< RungeKuttaVariableStepSizeSettings< > >(
+        integratorSettings = std::make_shared< RungeKuttaVariableStepSizeSettings< > >(
                     rungeKuttaVariableStepSize, simulationStartEpoch, timeStepMultiplier * 10.0,
                     numerical_integrators::RungeKuttaCoefficients::rungeKutta87DormandPrince,
                     std::numeric_limits< double >::epsilon( ), std::numeric_limits< double >::infinity( ),
@@ -110,7 +110,7 @@ boost::shared_ptr< IntegratorSettings< > > getIntegratorSettings(
     else if( k == 9 )
     {
         double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
-        integratorSettings = boost::make_shared< AdamsBashforthMoultonSettings< > >(
+        integratorSettings = std::make_shared< AdamsBashforthMoultonSettings< > >(
                     simulationStartEpoch, timeStepMultiplier * 10.0,
                     1.0, std::numeric_limits< double >::infinity( ),
                     toleranceFactor * tolerance, 1E6 * toleranceFactor * tolerance );
@@ -118,7 +118,7 @@ boost::shared_ptr< IntegratorSettings< > > getIntegratorSettings(
     else if( k == 10 )
     {
         double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
-        integratorSettings = boost::make_shared< AdamsBashforthMoultonSettings< > >(
+        integratorSettings = std::make_shared< AdamsBashforthMoultonSettings< > >(
                     simulationStartEpoch,  timeStepMultiplier * 10.0,
                     1.0, std::numeric_limits< double >::infinity( ),
                     toleranceFactor * tolerance, 1E6 * toleranceFactor * tolerance, 6, 6 );
@@ -126,7 +126,7 @@ boost::shared_ptr< IntegratorSettings< > > getIntegratorSettings(
     else if( k == 11 )
     {
         double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
-        integratorSettings = boost::make_shared< AdamsBashforthMoultonSettings< > >(
+        integratorSettings = std::make_shared< AdamsBashforthMoultonSettings< > >(
                     simulationStartEpoch,  timeStepMultiplier * 10.0,
                     1.0, std::numeric_limits< double >::infinity( ),
                     toleranceFactor * tolerance, 1E6 * toleranceFactor * tolerance, 8, 8 );
@@ -134,7 +134,7 @@ boost::shared_ptr< IntegratorSettings< > > getIntegratorSettings(
     else if( k == 12 )
     {
         double tolerance = std::pow( 10.0, static_cast< double >( -15.0 + 2.0 * j ) );
-        integratorSettings = boost::make_shared< AdamsBashforthMoultonSettings< > >(
+        integratorSettings = std::make_shared< AdamsBashforthMoultonSettings< > >(
                     simulationStartEpoch,  timeStepMultiplier * 10.0,
                     1.0, std::numeric_limits< double >::infinity( ),
                     toleranceFactor * tolerance, 1E6 * toleranceFactor * tolerance, 10, 10 );
@@ -142,7 +142,7 @@ boost::shared_ptr< IntegratorSettings< > > getIntegratorSettings(
     else if( k == 13 )
     {
         double timeStep =  timeStepMultiplier * std::pow( 2.0,  static_cast< double >( 1.0 + j ) );
-        integratorSettings = boost::make_shared< AdamsBashforthMoultonSettings< > >(
+        integratorSettings = std::make_shared< AdamsBashforthMoultonSettings< > >(
                     simulationStartEpoch, timeStep,
                     std::fabs( timeStep ), std::fabs( timeStep ), 1.0, 1.0 );
     }
@@ -192,7 +192,7 @@ template< typename StateScalarType = double >
 void runSimulations( )
 {
     unsigned int numberOfIntegrators = 14;
-    unsigned int numberOfPropagators = 4;
+    unsigned int numberOfPropagators = 7;
     unsigned int numberOfTolerances = 6;
     bool performForwardsBackwardsIntegration = true;
 
@@ -206,6 +206,11 @@ void runSimulations( )
         useLongDoubles = true;
         fileSuffix = "_long";
         toleranceFactor = 0.01;
+        std::cout<<"USING LONG DOUBLES"<<std::endl;
+    }
+    else
+    {
+        std::cout<<"USING DOUBLES"<<std::endl;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -224,7 +229,7 @@ void runSimulations( )
     double simulationStartEpoch = 0.0;
     double simulationEndEpoch = 7.0 * tudat::physical_constants::JULIAN_DAY;
 
-    std::map< std::string, boost::shared_ptr< BodySettings > > bodySettings =
+    std::map< std::string, std::shared_ptr< BodySettings > > bodySettings =
             getDefaultBodySettings( bodiesToCreate, -1.0E8, 1.0E8 );
 
 
@@ -232,14 +237,14 @@ void runSimulations( )
     NamedBodyMap bodyMap = createBodies( bodySettings );
 
     // Create spacecraft object.
-    bodyMap[ "Asterix" ] = boost::make_shared< simulation_setup::Body >( );
+    bodyMap[ "Asterix" ] = std::make_shared< simulation_setup::Body >( );
     bodyMap[ "Asterix" ]->setConstantBodyMass( 400.0 );
 
     // Create aerodynamic coefficient interface settings.
     double referenceArea = 4.0;
     double aerodynamicCoefficient = 1.2;
-    boost::shared_ptr< AerodynamicCoefficientSettings > aerodynamicCoefficientSettings =
-            boost::make_shared< ConstantAerodynamicCoefficientSettings >(
+    std::shared_ptr< AerodynamicCoefficientSettings > aerodynamicCoefficientSettings =
+            std::make_shared< ConstantAerodynamicCoefficientSettings >(
                 referenceArea, aerodynamicCoefficient * Eigen::Vector3d::UnitX( ), 1, 1 );
 
     // Create and set aerodynamic coefficients object
@@ -251,8 +256,8 @@ void runSimulations( )
     double radiationPressureCoefficient = 1.2;
     std::vector< std::string > occultingBodies;
     occultingBodies.push_back( "Earth" );
-    boost::shared_ptr< RadiationPressureInterfaceSettings > asterixRadiationPressureSettings =
-            boost::make_shared< CannonBallRadiationPressureInterfaceSettings >(
+    std::shared_ptr< RadiationPressureInterfaceSettings > asterixRadiationPressureSettings =
+            std::make_shared< CannonBallRadiationPressureInterfaceSettings >(
                 "Sun", referenceAreaRadiation, radiationPressureCoefficient, occultingBodies );
 
     // Create and set radiation pressure settings
@@ -278,22 +283,22 @@ void runSimulations( )
         centralBodies.push_back( "Earth" );
 
         // Define propagation settings.
-        std::map< std::string, std::vector< boost::shared_ptr< AccelerationSettings > > > accelerationsOfAsterix;
+        std::map< std::string, std::vector< std::shared_ptr< AccelerationSettings > > > accelerationsOfAsterix;
 
         if( accelerationCase == 0 )
         {
-            accelerationsOfAsterix[ "Earth" ].push_back( boost::make_shared< AccelerationSettings >(
+            accelerationsOfAsterix[ "Earth" ].push_back( std::make_shared< AccelerationSettings >(
                                                              basic_astrodynamics::central_gravity ) );
         }
         else if( accelerationCase == 1 )
         {
-            accelerationsOfAsterix[ "Earth" ].push_back( boost::make_shared< SphericalHarmonicAccelerationSettings >(
+            accelerationsOfAsterix[ "Earth" ].push_back( std::make_shared< SphericalHarmonicAccelerationSettings >(
                                                              5, 5 ) );
-            accelerationsOfAsterix[ "Moon" ].push_back( boost::make_shared< AccelerationSettings >(
+            accelerationsOfAsterix[ "Moon" ].push_back( std::make_shared< AccelerationSettings >(
                                                             basic_astrodynamics::central_gravity ) );
-            accelerationsOfAsterix[ "Sun" ].push_back( boost::make_shared< AccelerationSettings >(
+            accelerationsOfAsterix[ "Sun" ].push_back( std::make_shared< AccelerationSettings >(
                                                            basic_astrodynamics::central_gravity ) );
-            accelerationsOfAsterix[ "Sun" ].push_back( boost::make_shared< AccelerationSettings >(
+            accelerationsOfAsterix[ "Sun" ].push_back( std::make_shared< AccelerationSettings >(
                                                            basic_astrodynamics::cannon_ball_radiation_pressure ) );
 
         }
@@ -344,12 +349,12 @@ void runSimulations( )
                     }
                     else
                     {
-                        lmax = numberOfPropagators - 1;
-                        benchmarkResult[ k ].resize( numberOfPropagators);
+                        lmax = numberOfPropagators;
+                        benchmarkResult[ k ].resize( numberOfPropagators );
                     }
                     for( unsigned int l = 0; l < lmax; l++ )
                     {
-                        std::cout<<i<<" "<<j<<" "<<k<<" "<<l<<std::endl;
+                        std::cout<<accelerationCase<<" "<<i<<" "<<j<<" "<<k<<" "<<l<<std::endl;
 
                         // Set initial conditions for the Asterix satellite that will be propagated in this simulation.
                         // The initial conditions are given in Keplerian elements and later on converted to Cartesian
@@ -397,13 +402,25 @@ void runSimulations( )
                         {
                             propagatorType = encke;
                         }
+                        else if( l == 4 )
+                        {
+                            propagatorType = unified_state_model_quaternions;
+                        }
+                        else if( l == 5 )
+                        {
+                            propagatorType = unified_state_model_modified_rodrigues_parameters;
+                        }
+                        else if( l == 6 )
+                        {
+                            propagatorType = unified_state_model_exponential_map;
+                        }
 
-                        boost::shared_ptr< TranslationalStatePropagatorSettings< StateScalarType > > propagatorSettings =
-                                boost::make_shared< TranslationalStatePropagatorSettings< StateScalarType > >
+                        std::shared_ptr< TranslationalStatePropagatorSettings< StateScalarType > > propagatorSettings =
+                                std::make_shared< TranslationalStatePropagatorSettings< StateScalarType > >
                                 ( centralBodies, accelerationModelMap, bodiesToPropagate, systemInitialState,
-                                  boost::make_shared< PropagationTimeTerminationSettings >( simulationEndEpoch, true ), propagatorType );
+                                  std::make_shared< PropagationTimeTerminationSettings >( simulationEndEpoch, true ), propagatorType );
 
-                        boost::shared_ptr< IntegratorSettings< > > integratorSettings = getIntegratorSettings(
+                        std::shared_ptr< IntegratorSettings< > > integratorSettings = getIntegratorSettings(
                                     j, k, simulationStartEpoch, toleranceFactor, 1.0 );
 
                         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -477,14 +494,14 @@ void runSimulations( )
                         else if( accelerationCase == 1 && j > 0 )
                         {
 
-                            boost::shared_ptr< interpolators::OneDimensionalInterpolator<
+                            std::shared_ptr< interpolators::OneDimensionalInterpolator<
                                     double, Eigen::Matrix< StateScalarType, Eigen::Dynamic, 1 > > > stateInterpolator =
-                                    boost::make_shared< interpolators::LagrangeInterpolator<
+                                    std::make_shared< interpolators::LagrangeInterpolator<
                                     double, Eigen::Matrix< StateScalarType, Eigen::Dynamic, 1 > > >( integrationResult, 8 );
 
-                            boost::shared_ptr< interpolators::OneDimensionalInterpolator<
+                            std::shared_ptr< interpolators::OneDimensionalInterpolator<
                                     double, Eigen::Matrix< StateScalarType, Eigen::Dynamic, 1 > > > stateInterpolator2 =
-                                    boost::make_shared< interpolators::LagrangeInterpolator<
+                                    std::make_shared< interpolators::LagrangeInterpolator<
                                     double, Eigen::Matrix< StateScalarType, Eigen::Dynamic, 1 > > >( integrationResult, 6 );
 
                             std::map< double, Eigen::Matrix< StateScalarType, Eigen::Dynamic, 1 > > interpolatedResult;
@@ -543,9 +560,9 @@ void runSimulations( )
                                         j, k, propagationEndTime, toleranceFactor, -1.0 );
 
                             propagatorSettings =
-                                    boost::make_shared< TranslationalStatePropagatorSettings< StateScalarType > >
+                                    std::make_shared< TranslationalStatePropagatorSettings< StateScalarType > >
                                     ( centralBodies, accelerationModelMap, bodiesToPropagate, newSystemInitialState,
-                                      boost::make_shared< PropagationTimeTerminationSettings >( simulationStartEpoch, true ), propagatorType );
+                                      std::make_shared< PropagationTimeTerminationSettings >( simulationStartEpoch, true ), propagatorType );
 
                             // Create simulation object and propagate dynamics.
                             SingleArcDynamicsSimulator< StateScalarType > dynamicsSimulator2(
@@ -597,6 +614,8 @@ void runSimulations( )
                                     integrationError2[ resultIterator->first ] = ( resultIterator->second.template cast< double >( ) -
                                                                                    analyticalSolution ).segment( 0, 3 ).norm( );
                                 }
+
+                                std::cout<<"Kepler orbit error "<<integrationError2.rbegin( )->second<<std::endl;
 
                                 // Write forward/backward error to file.
                                 input_output::writeDataMapToTextFile( integrationError2,
@@ -668,7 +687,7 @@ void runSimulations( )
 int main()
 {
     //runSimulations< double >( );
-    runSimulations< long double >( );
+    runSimulations< double >( );
 
     // Final statement.
     // The exit code EXIT_SUCCESS indicates that the program was successfully executed.

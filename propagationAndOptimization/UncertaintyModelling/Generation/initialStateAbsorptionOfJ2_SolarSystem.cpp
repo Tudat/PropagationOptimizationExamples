@@ -14,7 +14,7 @@
 #include <limits>
 
 #include <Tudat/SimulationSetup/tudatEstimationHeader.h>
-#include <Tudat/Astrodynamics/OrbitDetermination/determinePostFitParameterInfluence.h>
+#include <Tudat/SimulationSetup/EstimationSetup/determinePostFitParameterInfluence.h>
 
 #include "propagationAndOptimization/applicationOutput.h"
 
@@ -59,17 +59,17 @@ int main( )
         std::string targetBody = bodiesToCreate.at( i );
 
         std::cout<<"************************************* "<<targetBody<<" ************************************"<<std::endl;
-        std::map< std::string, boost::shared_ptr< BodySettings > > bodySettings =
+        std::map< std::string, std::shared_ptr< BodySettings > > bodySettings =
                 getDefaultBodySettings( bodiesToCreate );
 
         double sunNormalizedJ2 = 2.0E-7 / calculateLegendreGeodesyNormalizationFactor( 2, 0 );
-        bodySettings[ "Sun" ]->gravityFieldSettings = boost::make_shared< SphericalHarmonicsGravityFieldSettings >(
+        bodySettings[ "Sun" ]->gravityFieldSettings = std::make_shared< SphericalHarmonicsGravityFieldSettings >(
                     getBodyGravitationalParameter( "Sun" ), 695.7E6,
                     ( Eigen::Matrix3d( ) << 1.0, 0.0, 0.0,
                       0.0, 0.0, 0.0,
                       sunNormalizedJ2 , 0.0, 0.0 ).finished( ),
                     Eigen::Matrix3d::Zero( ), "IAU_Sun" );
-        bodySettings[ targetBody ]->ephemerisSettings = boost::make_shared< InterpolatedSpiceEphemerisSettings >(
+        bodySettings[ targetBody ]->ephemerisSettings = std::make_shared< InterpolatedSpiceEphemerisSettings >(
                     simulationStartEpoch, simulationEndEpoch, 300.0, "SSB", "ECLIPJ2000" );
 
         NamedBodyMap bodyMap = createBodies( bodySettings );
@@ -99,12 +99,12 @@ int main( )
                     if( bodiesToCreate.at( j )  != "Sun" )
                     {
                         accelerationMap[ targetBody ][ bodiesToCreate.at( j ) ].push_back(
-                                    boost::make_shared< AccelerationSettings >( basic_astrodynamics::central_gravity ) );
+                                    std::make_shared< AccelerationSettings >( basic_astrodynamics::central_gravity ) );
                     }
                     else
                     {
                         accelerationMap[ targetBody ][ bodiesToCreate.at( j ) ].push_back(
-                                    boost::make_shared< SphericalHarmonicAccelerationSettings >( 2, 0 ) );
+                                    std::make_shared< SphericalHarmonicAccelerationSettings >( 2, 0 ) );
                     }
                 }
             }
@@ -116,22 +116,22 @@ int main( )
             Eigen::VectorXd systemInitialState = getInitialStatesOfBodies(
                         bodiesToPropagate, centralBodies, bodyMap, simulationStartEpoch );
 
-            boost::shared_ptr< PropagatorSettings< double > > propagatorSettings =
-                    boost::make_shared< TranslationalStatePropagatorSettings< double > >
+            std::shared_ptr< PropagatorSettings< double > > propagatorSettings =
+                    std::make_shared< TranslationalStatePropagatorSettings< double > >
                     ( centralBodies, accelerationModelMap, bodiesToPropagate, systemInitialState, simulationEndEpoch, cowell );
 
-            boost::shared_ptr< IntegratorSettings< > > integratorSettings =
-                    boost::make_shared< RungeKuttaVariableStepSizeSettings< > >
+            std::shared_ptr< IntegratorSettings< > > integratorSettings =
+                    std::make_shared< RungeKuttaVariableStepSizeSettings< > >
                     ( rungeKuttaVariableStepSize, ( simulationStartEpoch ), 12.0 * 3600.0,
                       RungeKuttaCoefficients::CoefficientSets::rungeKuttaFehlberg78,
                       12.0 * 3600.0, 12.0 * 3600.0, 1.0, 1.0 );
 
-            boost::shared_ptr< EstimatableParameterSettings > perturbedParameterSettings;
+            std::shared_ptr< EstimatableParameterSettings > perturbedParameterSettings;
             perturbedParameterSettings = (
-                        boost::make_shared< SphericalHarmonicEstimatableParameterSettings >(
+                        std::make_shared< SphericalHarmonicEstimatableParameterSettings >(
                             2, 0, 2, 0, "Sun", spherical_harmonics_cosine_coefficient_block ) );
 
-            std::pair< boost::shared_ptr< PodOutput< double > >, Eigen::VectorXd > estimationOutput =
+            std::pair< std::shared_ptr< PodOutput< double > >, Eigen::VectorXd > estimationOutput =
                     determinePostfitParameterInfluence(
                         bodyMap, integratorSettings, propagatorSettings, perturbedParameterSettings,
                         6.0 * 3600.0, boost::assign::list_of( -sunNormalizedJ2 ), boost::assign::list_of( 0 ), 4 );

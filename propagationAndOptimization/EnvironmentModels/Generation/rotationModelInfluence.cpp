@@ -36,6 +36,10 @@ int main()
     ///////////////////////     CREATE ENVIRONMENT AND VEHICLE       //////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    // Set simulation end epoch.
+    const double simulationStartEpoch = 0.0;
+    const double simulationEndEpoch = 4.0 * tudat::physical_constants::JULIAN_DAY;
+
     // Load Spice kernels.
     spice_interface::loadStandardSpiceKernels( );
 
@@ -44,7 +48,7 @@ int main()
     spice_interface::loadSpiceKernelInTudat( input_output::getSpiceKernelPath( ) + "moon_assoc_pa.tf" );
 
 
-    for( unsigned int rotationModelCase = 0; rotationModelCase < 3; rotationModelCase++ )
+    for( unsigned int rotationModelCase = 0; rotationModelCase < 4; rotationModelCase++ )
     {
         // Create body objects.
         std::vector< std::string > bodiesToCreate;
@@ -52,39 +56,66 @@ int main()
         bodiesToCreate.push_back( "Moon" );
         bodiesToCreate.push_back( "Sun" );
 
-        std::map< std::string, boost::shared_ptr< BodySettings > > bodySettings =
+        std::map< std::string, std::shared_ptr< BodySettings > > bodySettings =
                 getDefaultBodySettings( bodiesToCreate, -3600.0, 14.0 * tudat::physical_constants::JULIAN_DAY + 3600.0 );
 
         std::string moonFrame;
         if( rotationModelCase == 0 )
         {
-            moonFrame = "IAU_Moon";
+            moonFrame = "IAU_Moon_Simplified";
         }
         else if( rotationModelCase == 1 )
         {
-            moonFrame = "MOON_PA";
+            moonFrame = "IAU_Moon";
         }
         else if( rotationModelCase == 2 )
         {
             moonFrame = "MOON_ME";
         }
-        bodySettings[ "Moon" ]->rotationModelSettings = boost::make_shared< RotationModelSettings >(
-                    spice_rotation_model, "ECLIPJ2000", moonFrame );
-        boost::dynamic_pointer_cast< SphericalHarmonicsGravityFieldSettings >(
+        else if( rotationModelCase == 3 )
+        {
+            moonFrame = "MOON_PA";
+        }
+
+        if( rotationModelCase == 0 )
+        {
+            bodySettings[ "Moon" ]->rotationModelSettings = std::make_shared< SimpleRotationModelSettings >(
+                        "J2000", moonFrame,
+                        spice_interface::computeRotationQuaternionBetweenFrames(
+                            "J2000", "IAU_Moon", simulationStartEpoch ),
+                            simulationStartEpoch, spice_interface::getAngularVelocityVectorOfFrameInOriginalFrame(
+                                "J2000", "IAU_Moon", simulationStartEpoch ).norm( ) );
+        }
+        else
+        {
+
+            bodySettings[ "Moon" ]->rotationModelSettings = std::make_shared< RotationModelSettings >(
+                        spice_rotation_model, "J2000", moonFrame );
+
+        }
+        bodySettings[ "Earth" ]->rotationModelSettings = std::make_shared< RotationModelSettings >(
+                    spice_rotation_model, "J2000", moonFrame );
+        bodySettings[ "Sun" ]->rotationModelSettings = std::make_shared< RotationModelSettings >(
+                    spice_rotation_model, "J2000", moonFrame );
+
+        bodySettings[ "Moon" ]->ephemerisSettings->resetFrameOrientation( "J2000" );
+        bodySettings[ "Sun" ]->ephemerisSettings->resetFrameOrientation( "J2000" );
+        bodySettings[ "Earth" ]->ephemerisSettings->resetFrameOrientation( "J2000" );
+
+        std::dynamic_pointer_cast< SphericalHarmonicsGravityFieldSettings >(
                     bodySettings[ "Moon" ]->gravityFieldSettings )->resetAssociatedReferenceFrame( moonFrame );
 
-        std::cout<<"IAU: "<<std::endl<<spice_interface::computeRotationQuaternionBetweenFrames( "ECLIPJ2000", "IAU_MOON", 0.0 ).toRotationMatrix( )<<std::endl;
-        std::cout<<"ME : "<<std::endl<<spice_interface::computeRotationQuaternionBetweenFrames( "ECLIPJ2000", "MOON_ME", 0.0 ).toRotationMatrix( )<<std::endl;
-        std::cout<<"PA : "<<std::endl<<spice_interface::computeRotationQuaternionBetweenFrames( "ECLIPJ2000", "MOON_PA", 0.0 ).toRotationMatrix( )<<std::endl;
-
-        // Create Earth object
+        std::cout<<"IAU: "<<std::endl<<spice_interface::computeRotationQuaternionBetweenFrames( "J2000", "IAU_MOON", 0.0 ).toRotationMatrix( )<<std::endl;
+        std::cout<<"ME : "<<std::endl<<spice_interface::computeRotationQuaternionBetweenFrames( "J2000", "MOON_ME", 0.0 ).toRotationMatrix( )<<std::endl;
+        std::cout<<"PA : "<<std::endl<<spice_interface::computeRotationQuaternionBetweenFrames( "J2000", "MOON_PA", 0.0 ).toRotationMatrix( )<<std::endl;
+                // Create Earth object
         NamedBodyMap bodyMap = createBodies( bodySettings );
 
         // Create spacecraft object.
-        bodyMap[ "LunarOrbiter" ] = boost::make_shared< simulation_setup::Body >( );
+        bodyMap[ "LunarOrbiter" ] = std::make_shared< simulation_setup::Body >( );
 
         // Finalize body creation.
-        setGlobalFrameBodyEphemerides( bodyMap, "SSB", "ECLIPJ2000" );
+        setGlobalFrameBodyEphemerides( bodyMap, "SSB", "J2000" );
 
         for( unsigned int accelerationCase = 0; accelerationCase < 4; accelerationCase++ )
         {
@@ -104,7 +135,7 @@ int main()
 
 
             // Define propagation settings.
-            std::map< std::string, std::vector< boost::shared_ptr< AccelerationSettings > > > accelerationsOfLunarOrbiter;
+            std::map< std::string, std::vector< std::shared_ptr< AccelerationSettings > > > accelerationsOfLunarOrbiter;
 
             int maximumDegree, maximumOrder;
             if( accelerationCase == 0 )
@@ -128,11 +159,11 @@ int main()
                 maximumOrder = 0;
             }
 
-            accelerationsOfLunarOrbiter[ "Moon" ].push_back( boost::make_shared< SphericalHarmonicAccelerationSettings >(
+            accelerationsOfLunarOrbiter[ "Moon" ].push_back( std::make_shared< SphericalHarmonicAccelerationSettings >(
                                                                  maximumDegree, maximumOrder ) );
-            accelerationsOfLunarOrbiter[ "Earth" ].push_back( boost::make_shared< AccelerationSettings >(
+            accelerationsOfLunarOrbiter[ "Earth" ].push_back( std::make_shared< AccelerationSettings >(
                                                                   basic_astrodynamics::central_gravity ) );
-            accelerationsOfLunarOrbiter[ "Sun" ].push_back( boost::make_shared< AccelerationSettings >(
+            accelerationsOfLunarOrbiter[ "Sun" ].push_back( std::make_shared< AccelerationSettings >(
                                                                 basic_astrodynamics::central_gravity ) );
             accelerationMap[  "LunarOrbiter" ] = accelerationsOfLunarOrbiter;
 
@@ -166,17 +197,22 @@ int main()
             Eigen::VectorXd systemInitialState = convertKeplerianToCartesianElements(
                         lunarOrbiterInitialStateInKeplerianElements,
                         moonGravitationalParameter ) + spice_interface::getBodyCartesianStateAtEpoch(
-                        "Moon", centralBodies.at( 0 ), "ECLIPJ2000", "None", 0.0 );
+                        "Moon", centralBodies.at( 0 ), "J2000", "None", 0.0 );
 
-            // Set simulation end epoch.
-            const double simulationStartEpoch = 0.0;
-            const double simulationEndEpoch = 4.0 * tudat::physical_constants::JULIAN_DAY;
+            std::vector< std::shared_ptr< SingleDependentVariableSaveSettings > > dependentVariablesList;
+            dependentVariablesList.push_back( std::make_shared< SingleDependentVariableSaveSettings >(
+                                                  euler_angles_to_body_fixed_313, "Moon" ) );
 
-            boost::shared_ptr< TranslationalStatePropagatorSettings< double > > propagatorSettings =
-                    boost::make_shared< TranslationalStatePropagatorSettings< double > >
-                    ( centralBodies, accelerationModelMap, bodiesToPropagate, systemInitialState, simulationEndEpoch, cowell );
+            // Create object with list of dependent variables
+            std::shared_ptr< DependentVariableSaveSettings > dependentVariablesToSave =
+                    std::make_shared< DependentVariableSaveSettings >( dependentVariablesList, false );
 
-            boost::shared_ptr< IntegratorSettings< > > integratorSettings = boost::make_shared< IntegratorSettings< > >
+            std::shared_ptr< TranslationalStatePropagatorSettings< double > > propagatorSettings =
+                    std::make_shared< TranslationalStatePropagatorSettings< double > >
+                    ( centralBodies, accelerationModelMap, bodiesToPropagate, systemInitialState, simulationEndEpoch, cowell,
+                      dependentVariablesToSave );
+
+            std::shared_ptr< IntegratorSettings< > > integratorSettings = std::make_shared< IntegratorSettings< > >
                     ( rungeKutta4, simulationStartEpoch, 10.0 );
 
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -197,6 +233,14 @@ int main()
             // Write satellite propagation history to file.
             input_output::writeDataMapToTextFile( integrationResult,
                                                   "stateMoonOrbiterRotationCases_full_" +
+                                                  boost::lexical_cast< std::string >( rotationModelCase ) + "_" +
+                                                  boost::lexical_cast< std::string >( accelerationCase ) +
+                                                  ".dat",
+                                                  outputDirectory );
+
+            // Write satellite propagation history to file.
+            input_output::writeDataMapToTextFile( dynamicsSimulator.getDependentVariableHistory( ),
+                                                  "stateMoonOrbiterRotationCasesAngles_full_" +
                                                   boost::lexical_cast< std::string >( rotationModelCase ) + "_" +
                                                   boost::lexical_cast< std::string >( accelerationCase ) +
                                                   ".dat",
